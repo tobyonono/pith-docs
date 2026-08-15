@@ -1,8 +1,10 @@
 ---
-title: "WordPress Development Standards at Pith"
+title: "WordPress Development Standards and Headless Approach"
 sidebarTitle: "WordPress"
 description: "Pith's approach to WordPress — theme architecture, the tools and plugins Pith uses, WooCommerce standards, and headless WordPress with Next.js."
 ---
+
+WordPress is Pith's platform of choice for content-heavy sites and WooCommerce projects. This page documents the studio's standards for theme architecture, ACF field definitions, WooCommerce conventions, headless setups with WPGraphQL and Next.js, and the approved plugin list.
 
 ## When to Use WordPress
 
@@ -14,7 +16,7 @@ Pith builds custom themes only. Off-the-shelf themes and heavily modified commer
 
 Standard theme structure:
 
-```
+```text
 theme-name/
 ├── functions.php       # Theme setup, enqueues, hooks
 ├── style.css           # Theme headers only

@@ -1,7 +1,7 @@
 ---
-title: "React Component Patterns and Best Practices"
+title: "React Component Patterns and Authorship Standards at Pith"
 sidebarTitle: "React Components"
-description: "How Pith writes React components — composition patterns, custom hooks, prop design, accessibility requirements, and the component conventions every project follows."
+description: "Prop design, composition patterns, custom hooks, and accessibility requirements — the React component conventions Pith follows on every project."
 ---
 
 Consistent component authorship is what makes a codebase feel like one team wrote it. This page documents the patterns Pith has converged on after shipping many projects — not rules for the sake of rules, but decisions that have proven their value in maintenance and collaboration.
@@ -61,9 +61,9 @@ function useMediaQuery(query: string): boolean {
 | `useInView` | Fires once (or repeatedly) when an element enters the viewport |
 | `useReducedMotion` | Reads `prefers-reduced-motion` — required for animated components |
 
-<Note>
+<Warning>
   **`useReducedMotion` is required for any animated component.** If a component triggers GSAP or CSS animations, it must call `useReducedMotion` and skip or simplify the animation when the user has requested reduced motion. This is a studio-wide accessibility baseline, not an optional enhancement.
-</Note>
+</Warning>
 
 ## Composition over Configuration
 

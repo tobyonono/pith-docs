@@ -27,7 +27,7 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
 
-gsap.registerPlugin(ScrollTrigger)
+gsap.registerPlugin(useGSAP, ScrollTrigger)
 ```
 
 If you're using other GSAP plugins (Flip, Draggable, MotionPath), register them in the same place. Do not register plugins inside component bodies — it causes multiple registration warnings and is wasteful.
@@ -41,6 +41,10 @@ If you're using other GSAP plugins (Flip, Draggable, MotionPath), register them 
 Use GSAP's official React hook for all animation inside components. It handles cleanup automatically when the component unmounts, killing ScrollTriggers and reversing tweens correctly:
 
 ```tsx
+import { useRef } from 'react'
+import { gsap } from 'gsap'
+import { useGSAP } from '@gsap/react'
+
 function HeroSection() {
   const container = useRef<HTMLDivElement>(null)
 
@@ -115,8 +119,21 @@ Consistent easing gives Pith's animations a coherent feel across projects. Use t
 </Warning>
 
 ```tsx
-function useReducedMotion() {
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+import { useState, useEffect } from 'react'
+
+function useReducedMotion(): boolean {
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    setPrefersReducedMotion(mq.matches)
+
+    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
+
+  return prefersReducedMotion
 }
 
 // In your animation setup:

@@ -1,8 +1,10 @@
 ---
-title: "Spacing, Grid, and Layout Standards"
+title: "Spacing, Grid, and Layout Standards for Pith Projects"
 sidebarTitle: "Spacing & Layout"
 description: "The spacing scales, grid systems, and layout rules Pith uses to create consistent, well-proportioned interfaces across every screen size."
 ---
+
+Spacing, grid structure, and layout rhythm are the invisible scaffolding that holds an interface together. This page documents the core systems Pith uses across every project: the base-4 spacing scale, 12-column grid, section spacing conventions, z-index layers, responsive breakpoints, and how all of these are applied correctly in Figma. Following these standards ensures that every layout — from a single component to a full marketing page — feels intentional and consistent.
 
 ## Spacing Scale
 
@@ -10,7 +12,7 @@ Consistent spacing is what separates interfaces that feel considered from ones t
 
 The standard Pith spacing scale:
 
-```
+```text
 spacing/1  —  4px
 spacing/2  —  8px
 spacing/3  — 12px
@@ -54,7 +56,7 @@ In Figma, set up layout grids on your primary frame types (desktop, tablet, mobi
 
 Vertical rhythm at the section level follows a set of standard values. Consistency here is what makes a long-scroll page feel intentionally paced rather than arbitrarily spaced.
 
-```
+```text
 Section padding (desktop): 120px top / 120px bottom
 Section padding (mobile):   64px top /  64px bottom
 Component gap within section: 40px – 64px
@@ -69,7 +71,7 @@ These values map directly to the spacing scale: 120px is `spacing/24 + spacing/6
 
 Z-index values should never be arbitrary. Define and document every layer at the start of a project:
 
-```
+```text
 z-base:     0   — default document flow
 z-raised:   10  — slightly elevated elements (sticky headers, floating labels)
 z-dropdown: 100 — dropdown menus, select lists
@@ -86,7 +88,7 @@ In code, define these as named CSS custom properties or a constants file. In Fig
 
 Pith uses a breakpoint set aligned with Tailwind CSS defaults, ensuring that design handoff maps cleanly to code with no conversion required:
 
-```
+```text
 sm:  640px   — large phones / small tablets (landscape)
 md:  768px   — tablets (portrait)
 lg:  1024px  — tablets (landscape) / small laptops

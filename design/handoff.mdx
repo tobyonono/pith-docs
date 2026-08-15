@@ -1,8 +1,10 @@
 ---
-title: "Design-to-Dev Handoff Standards at Pith"
+title: "Design-to-Development Handoff Standards at Pith Studio"
 sidebarTitle: "Handoff"
-description: "How Pith prepares Figma files for development handoff — including spec annotations, token exports, interaction documentation, and the handoff checklist."
+description: "How Pith prepares Figma files for development handoff — covering spec annotations, token exports, interaction documentation, and asset export standards."
 ---
+
+Delivering a well-prepared handoff is as much a design responsibility as the visual work itself. This page defines exactly what "ready for development" means at Pith — from the pre-handoff checklist and asset export formats to interaction annotation standards and how design and development teams communicate throughout the build phase.
 
 ## Handoff Philosophy
 
@@ -76,7 +78,7 @@ Document animation intent using **sticky notes placed directly on the relevant f
 - **Delay** — e.g. `0ms`, or stagger logic if multiple elements animate in sequence
 - **Trigger** — e.g. `on scroll enter`, `on hover`, `on page load`
 
-Where the interaction maps to a pattern already defined in the GSAP animation standards (see the Dev section), reference it by name rather than duplicating the spec. For example: *"Fade-up entrance — use `gsap/fadeUp` standard."*
+Where the interaction maps to a named animation pattern already defined in the project's dev documentation, reference it by name rather than duplicating the full spec — for example: *"Fade-up entrance — refer to the project animation standard."*
 
 Prototype flows in the Prototypes page can demonstrate the interaction concept, but they are supplementary — the sticky note annotation is the authoritative spec.
 
@@ -86,7 +88,7 @@ Prototype flows in the Prototypes page can demonstrate the interaction concept, 
 
 Clear communication channels prevent spec drift and keep the project moving without bottlenecks.
 
-- **Developers open questions as Figma comments**, tagged `@designer` on the relevant frame. This keeps questions contextual and avoids out-of-thread Slack messages that lose context.
-- **Designers respond within 1 business day.** If a blocker is urgent, flag it in Slack and link the Figma comment directly.
-- **Any deviation from the spec must be documented.** If a developer determines that something can't or shouldn't be built as designed, the resolution must be recorded. Either: (a) update the Figma file to reflect the agreed change, or (b) log the deviation in Jira/Linear with a note on the rationale. Undocumented deviations create inconsistencies that are hard to trace later.
+- **Developers open questions as Figma comments**, tagged `@designer` on the relevant frame. This keeps questions contextual and avoids out-of-thread messages that lose context.
+- **Designers respond within 1 business day.** If a blocker is urgent, flag it directly with the designer and link the Figma comment for context.
+- **Any deviation from the spec must be documented.** If a developer determines that something can't or shouldn't be built as designed, the resolution must be recorded — either update the Figma file to reflect the agreed change, or log the deviation in the project's issue tracker with a note on the rationale. Undocumented deviations create inconsistencies that are hard to trace later.
 - **Designers should be available for implementation questions** throughout the build phase — handoff doesn't mean a designer's job is done. Walk-through calls with the developer for complex interactions are encouraged, not optional.

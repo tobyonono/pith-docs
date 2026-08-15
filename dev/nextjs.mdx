@@ -1,5 +1,5 @@
 ---
-title: "Next.js Development Standards at Pith"
+title: "Next.js Development Standards and Conventions at Pith"
 sidebarTitle: "Next.js"
 description: "How Pith builds with Next.js — App Router conventions, data fetching patterns, image optimisation, and performance best practices."
 ---
@@ -45,7 +45,7 @@ Use **parallel routes** (`@slot`) and **intercepting routes** only when the prod
 
 Prefer `async` Server Components for all data that's available at render time:
 
-```ts
+```tsx
 // Preferred: async Server Component
 async function ProjectsPage() {
   const projects = await getProjects() // fetch from Sanity or API
@@ -55,7 +55,7 @@ async function ProjectsPage() {
 
 For data that depends on user interaction or needs to stay fresh on the client, use **React Query** or **SWR**:
 
-```ts
+```tsx
 // For client-side state: React Query or SWR
 const { data, isLoading } = useQuery({
   queryKey: ['projects'],
@@ -109,7 +109,7 @@ const data = await fetch(url, {
 })
 ```
 
-When Sanity publishes a change it calls a Pith revalidation route, which calls `revalidateTag('projects')` — only the affected pages rebuild, and the rest of the cache stays warm.
+When Sanity publishes a change it calls a revalidation API route, which calls `revalidateTag('projects')` — only the affected pages rebuild, and the rest of the cache stays warm.
 
 Use `revalidatePath` for path-specific invalidation when a tag would be too broad.
 

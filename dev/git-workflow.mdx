@@ -1,8 +1,10 @@
 ---
-title: "Git Workflow and Branching Conventions"
+title: "Git Workflow, Branching Strategy, and Commit Conventions"
 sidebarTitle: "Git Workflow"
 description: "Pith's Git branching strategy, commit message conventions, PR process, and the rules that keep every project's history clean and deployable."
 ---
+
+Consistent version control practices keep every Pith project in a releasable state and make collaboration predictable. This page documents the branching model, Conventional Commits format, pull request process, pre-commit hook setup, and `.gitignore` requirements used across all projects.
 
 ## Branch Strategy
 
@@ -25,7 +27,7 @@ Hotfix branches are the only exception to the "merge to `develop` first" rule �
 
 Pith follows the [Conventional Commits](https://www.conventionalcommits.org/) specification. Every commit message uses a structured format that makes the project history scannable and supports automated changelog generation.
 
-```
+```bash
 feat: add hero animation sequence
 fix: resolve mobile nav overflow on iOS
 chore: update GSAP to v3.12
@@ -39,7 +41,7 @@ perf: lazy-load below-fold images
 - Keep the description under 72 characters
 - Use the imperative mood — "add" not "added", "fix" not "fixed"
 - The optional `scope` in parentheses names the area of the codebase affected: `feat(nav):`, `fix(checkout):`
-- Add a body or footer for breaking changes: `BREAKING CHANGE: renames `useNav` to `useNavigation``
+- Add a body or footer for breaking changes — e.g. `BREAKING CHANGE: renames useNav to useNavigation`
 
 ## PR Process
 
@@ -76,7 +78,7 @@ Set up Husky during project initialisation — it should be committed to the rep
 
 Every project `.gitignore` must include at minimum:
 
-```
+```text
 .env.local
 .env*.local
 node_modules/
