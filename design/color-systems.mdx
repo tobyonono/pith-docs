@@ -1,0 +1,111 @@
+---
+title: "Building Accessible Color Systems for Every Project"
+sidebarTitle: "Color Systems"
+description: "How Pith constructs perceptually uniform, accessible color palettes — from brand color tokens to semantic usage rules."
+---
+
+## Philosophy
+
+Color is one of the most powerful tools in a designer's toolkit — and one of the most easily abused. At Pith, we treat color as both a functional and expressive system. Every palette we build is designed to communicate clearly, reinforce brand identity, and remain fully inclusive for users across all visual abilities.
+
+Two principles underpin every color decision we make:
+
+**Perceptual uniformity.** A color at step 400 should feel visually equidistant from step 300 and step 500. If you squint at a scale and one step looks dramatically darker or lighter than its neighbours, the scale is broken. We use perceptually uniform color spaces (such as OKLCH or HSLuv) to construct palettes that hold their relationships across the full range.
+
+**Accessibility is non-negotiable.** We target WCAG AA as a floor — never a ceiling. Where the design allows it, we push for AAA. Color must never be the sole means of conveying meaning.
+
+<Note>
+WCAG AA requires a contrast ratio of **4.5:1** for normal body text and **3:1** for large text (18pt+, or 14pt bold+). WCAG AAA requires **7:1** and **4.5:1** respectively. Always verify contrast ratios against your final surface colors before shipping.
+</Note>
+
+---
+
+## Palette Structure
+
+We use a numeric scale, typically running from **50 to 950**, to give room for both extremely light tints and deep, rich shades. This scale is consistent across every hue in the palette, making token references predictable and interchangeable.
+
+```
+brand/50   — lightest tint (near-white, background use only)
+brand/100
+brand/200
+brand/300
+brand/400
+brand/500  — mid-range, use for decorative accents
+brand/600  — primary action color (buttons, links, CTAs)
+brand/700
+brand/800
+brand/900
+brand/950  — darkest shade (text on light, background in dark mode)
+```
+
+Each step is generated algorithmically from a source hue so that visual weight increments are consistent. No eyeballing.
+
+---
+
+## Token Categories
+
+A well-structured palette organises colors into clearly scoped categories. We use the following system across all projects:
+
+| Category | Purpose |
+|---|---|
+| `brand/*` | Core brand hues — the primary, secondary, and accent colors defined by the brand |
+| `neutral/*` | Grays and off-whites — the backbone of most interfaces |
+| `semantic/*` | Communicative colors: `error`, `warning`, `success`, `info` |
+| `surface/*` | Backgrounds, cards, modals, overlays |
+| `text/*` | Text colors: `primary`, `secondary`, `disabled`, `inverse` |
+
+Separating **semantic** from **brand** is especially important: a brand's orange should never be reused as the `warning` color unless it has been explicitly defined as such in the token system.
+
+---
+
+## Figma Variable Setup
+
+<Steps>
+  <Step title="Create a new Variable Collection">
+    In Figma, open the local variables panel and create a new collection named `Color Tokens`. This will hold your primitive (raw) color values.
+  </Step>
+  <Step title="Add primitive color variables">
+    Add variables for every step of every hue: `brand/50`, `brand/100` … `brand/950`. Set their type to **Color** and enter the corresponding hex or OKLCH value.
+  </Step>
+  <Step title="Create a second collection for semantic tokens">
+    Create a second collection named `Semantic Tokens`. Variables here — such as `text/primary` or `surface/card` — should reference values from the `Color Tokens` collection, not raw hex codes.
+  </Step>
+  <Step title="Set up light and dark mode groups">
+    Within `Semantic Tokens`, add two modes: **Light** and **Dark**. In Light mode, `text/primary` might point to `neutral/950`; in Dark mode, it points to `neutral/50`. One token, two values.
+  </Step>
+  <Step title="Publish and apply">
+    Publish the variable collections to your team library. Apply semantic tokens to all Figma components — never the primitives directly.
+  </Step>
+</Steps>
+
+<Warning>
+Never hardcode hex values directly on components or text layers in Figma. If you type `#1A1A1A` directly into a fill, that value is invisible to the token system — it won't respond to mode switches, it won't update when the palette evolves, and it creates invisible inconsistencies that compound over time. Always apply a variable.
+</Warning>
+
+---
+
+## Accessibility Checks
+
+Contrast testing is not optional. Before any design is handed off:
+
+- Run **Figma's Accessibility Checker** (or the Contrast plugin) on every text-on-background combination.
+- Check **interactive states** — hover, focus, and disabled — not just the default state.
+- Use browser DevTools' accessibility panel to validate rendered contrast in code.
+- For icon-only controls, ensure the icon itself (not just surrounding space) meets the 3:1 non-text contrast requirement.
+
+When building semantic tokens, validate the entire matrix: every `text/*` value against every `surface/*` value it may appear on.
+
+---
+
+## Dark Mode Considerations
+
+Dark mode is not an inversion filter. It is a deliberate second color theme.
+
+Build semantic tokens from day one with both modes in mind. A `surface/card` token in Light mode might be `neutral/50`; in Dark mode it might be `neutral/900`. The component remains unchanged — only the variable value switches.
+
+Key rules:
+
+- **Never reference primitive tokens in components.** Only reference semantic tokens.
+- **Elevation in dark mode is expressed through lightness**, not shadow. Cards appear slightly lighter than the base background rather than casting a drop shadow.
+- **Saturate slightly in dark mode.** Pure grays can appear lifeless on dark surfaces — a subtle warm or cool tint in the neutral scale helps.
+- Test your dark palette in a dimly lit environment, not just on a bright studio monitor.

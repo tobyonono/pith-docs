@@ -1,0 +1,92 @@
+---
+title: "Design-to-Dev Handoff Standards at Pith"
+sidebarTitle: "Handoff"
+description: "How Pith prepares Figma files for development handoff — including spec annotations, token exports, interaction documentation, and the handoff checklist."
+---
+
+## Handoff Philosophy
+
+<Note>
+  Handoff is not a moment — it's a process. At Pith, design and development work in parallel from early in the project lifecycle. Handoff begins when the **first component is spec-ready**, not when every screen is finished. Developers shouldn't be waiting for designers, and designers shouldn't be throwing files over a wall.
+</Note>
+
+This approach means developers can begin building foundational components and layout structures while design continues to refine later screens. It reduces crunch at the end of a project, surfaces technical constraints earlier, and produces better results for clients. The checklist and standards on this page define what "ready" looks like at every stage.
+
+---
+
+## Pre-Handoff Checklist
+
+Before any frame or component is handed to development, run through this checklist. Every item should be confirmed before marking work as ready.
+
+- [ ] All component states documented: **default, hover, focus, active, disabled, error**
+- [ ] Spacing and sizing use tokens, not hardcoded values
+- [ ] All layers are named clearly — no `Frame 47`, `Group 3`, or `Rectangle 12`
+- [ ] Typography uses named text styles from the project's defined type scale
+- [ ] Colors reference variables, not raw hex values
+- [ ] Responsive behavior documented for key breakpoints (mobile, tablet, desktop as a minimum)
+- [ ] Interaction notes added — transitions, animation intent, scroll behaviour, and trigger conditions
+- [ ] Assets exported in the correct format (SVG for icons, WebP/AVIF for photos)
+- [ ] Prototype flows demonstrate key user interactions (navigation, modals, form states)
+- [ ] A `Specs` page or sticky annotations on frames cover edge cases and non-obvious decisions
+
+---
+
+## Asset Export Standards
+
+How assets leave Figma matters as much as how they look inside it. Incorrect export formats create performance problems, visual degradation, or unnecessary rework in development.
+
+| Asset Type     | Format                        | Notes                                           |
+|----------------|-------------------------------|-------------------------------------------------|
+| Icons          | SVG (optimised with SVGO)     | Keep paths clean; remove unnecessary groups     |
+| Photos         | WebP with AVIF fallback       | Export at 1x and 2x for retina displays         |
+| Illustrations  | SVG or Lottie (if animated)   | Confirm animation approach with dev before export |
+| Logos          | SVG                           | Never rasterise a logo                          |
+
+<Warning>
+  **Never export PNGs for icons or logos.** PNG icons lose crispness on high-DPI screens, carry unnecessary file weight, and can't be styled with CSS. SVG is the only correct format for vector assets. If a developer asks for a PNG icon, the answer is always no — export the SVG and optimise it.
+</Warning>
+
+---
+
+## Using Figma Dev Mode
+
+Figma's **Dev Mode** is the primary bridge between design intent and implementation. All Pith developers and designers should be familiar with how to use it effectively.
+
+**Switching to Dev Mode:** Click the `</>` icon in the Figma toolbar (or press `Shift + D`). Dev Mode changes the panel layout to surface information most relevant to engineers.
+
+**Inspecting specs:** Select any layer to see its dimensions, padding, corner radius, and position values in the right panel. All values are displayed using the token names where variables are set up correctly — developers should see `spacing/4` rather than `16px`.
+
+**Copying CSS properties:** In Dev Mode, Figma generates CSS, iOS, and Android code snippets for selected layers. Use the CSS output as a starting reference, but treat it as a guide — not production code. Auto-layout containers map to CSS Flexbox, which is a reliable starting point.
+
+**Viewing component documentation:** Published components in the Pith library include a description field. In Dev Mode, selecting a component instance surfaces its name, properties, and any documentation notes added by the designer. This is where variant documentation and usage notes should live.
+
+**Navigating component links:** Dev Mode links component instances back to their main component in the library, making it easy to inspect the canonical version.
+
+---
+
+## Interaction Documentation
+
+Animations and transitions need to be specified with the same rigour as layout and color. A frame that says nothing about how it enters the viewport leaves the developer guessing.
+
+Document animation intent using **sticky notes placed directly on the relevant frame** in Figma. Each annotation should specify:
+
+- **Property animated** — e.g. `opacity`, `transform: translateY`, `clip-path`
+- **Duration** — e.g. `400ms`
+- **Easing** — e.g. `ease-out`, `cubic-bezier(0.16, 1, 0.3, 1)`
+- **Delay** — e.g. `0ms`, or stagger logic if multiple elements animate in sequence
+- **Trigger** — e.g. `on scroll enter`, `on hover`, `on page load`
+
+Where the interaction maps to a pattern already defined in the GSAP animation standards (see the Dev section), reference it by name rather than duplicating the spec. For example: *"Fade-up entrance — use `gsap/fadeUp` standard."*
+
+Prototype flows in the Prototypes page can demonstrate the interaction concept, but they are supplementary — the sticky note annotation is the authoritative spec.
+
+---
+
+## Communication During Development
+
+Clear communication channels prevent spec drift and keep the project moving without bottlenecks.
+
+- **Developers open questions as Figma comments**, tagged `@designer` on the relevant frame. This keeps questions contextual and avoids out-of-thread Slack messages that lose context.
+- **Designers respond within 1 business day.** If a blocker is urgent, flag it in Slack and link the Figma comment directly.
+- **Any deviation from the spec must be documented.** If a developer determines that something can't or shouldn't be built as designed, the resolution must be recorded. Either: (a) update the Figma file to reflect the agreed change, or (b) log the deviation in Jira/Linear with a note on the rationale. Undocumented deviations create inconsistencies that are hard to trace later.
+- **Designers should be available for implementation questions** throughout the build phase — handoff doesn't mean a designer's job is done. Walk-through calls with the developer for complex interactions are encouraged, not optional.

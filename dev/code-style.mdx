@@ -1,0 +1,116 @@
+---
+title: "Code Style and Formatting Standards"
+sidebarTitle: "Code Style"
+description: "Pith's code style rules — from TypeScript configuration and ESLint setup to React patterns, imports order, and the non-negotiables every PR must follow."
+---
+
+Consistent code style reduces cognitive load during review and makes the entire codebase feel authored by a single careful team rather than assembled from patches. At Pith, style is not a matter of personal taste — it is enforced by tooling and reviewed like any other aspect of code quality.
+
+## Tools
+
+| Tool | Role |
+|---|---|
+| **Prettier** | Formatting — whitespace, semicolons, quotes, line length |
+| **ESLint** | Linting — code quality, import order, accessibility rules |
+| **TypeScript** | Type safety — catches errors before runtime |
+
+All three run automatically **on save** in VS Code (using the recommended workspace settings) and as a **pre-commit hook** via Husky + lint-staged. A PR with failing lint or type errors will not be merged.
+
+---
+
+## TypeScript Rules
+
+TypeScript is not optional at Pith. Every project runs in `strict` mode with additional checks enabled.
+
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true
+  }
+}
+```
+
+**`strict: true`** enables the full suite of strict checks: `noImplicitAny`, `strictNullChecks`, `strictFunctionTypes`, and more. This is the baseline.
+
+**`noUncheckedIndexedAccess`** means that `array[0]` returns `T | undefined`, not `T`. This forces you to handle the case where an array might be empty — a common source of runtime errors.
+
+**`exactOptionalPropertyTypes`** distinguishes between a property being absent and a property being explicitly set to `undefined`. These are different things; this option makes TypeScript agree.
+
+### Additional Conventions
+
+- **Prefer `type` over `interface`** for most cases. Use `interface` only for extendable contracts — e.g. when third-party code may augment the type via declaration merging.
+- **No `any`.** Use `unknown` and narrow it with type guards, or define a proper type. If you find yourself reaching for `any`, that is a signal to model the data more carefully.
+- **Explicit return types on exported functions.** The return type is part of the public contract; make it visible without requiring inference.
+
+---
+
+## React Patterns
+
+**Use functional components and hooks.** Class components are not used in new Pith code.
+
+**Extract complex logic into custom hooks** with the `use` prefix: `useScrollPosition`, `useMediaQuery`, `useSanityLivePreview`. A hook that is used in more than one component lives in `lib/hooks/`; a hook used by only one component can be co-located.
+
+**Keep components focused.** A component that fetches data, formats it, and renders three different UI states is doing too much. If you cannot describe what a component does in one sentence without the word "and", split it.
+
+**Co-locate styles with components.** CSS Modules files sit next to the component file they style (`HeroSection.tsx` / `HeroSection.module.css`). Tailwind classes are written inline on the JSX.
+
+**Prefer Server Components.** Mark a file `'use client'` only when you actually need browser APIs, event listeners, or React state and effects. Unnecessary client components bloat the JavaScript bundle sent to the browser.
+
+---
+
+## Import Order
+
+ESLint enforces a consistent import order. Group imports as follows, with a blank line between each group:
+
+```ts
+// 1. React / Next.js
+import { useState } from 'react'
+import Image from 'next/image'
+
+// 2. Third-party packages
+import { gsap } from 'gsap'
+
+// 3. Internal — absolute paths via the @ alias
+import { Button } from '@/components/ui'
+import { fetchProjects } from '@/lib/sanity/queries'
+
+// 4. Relative paths
+import styles from './HeroSection.module.css'
+```
+
+The `@` alias maps to the project root. Use it for all internal imports rather than relative `../../` paths.
+
+---
+
+## Comments
+
+**Write comments that explain *why*, not *what*.** The code already explains what it is doing — that is what code is for. A comment earns its place by recording intent, a trade-off, a workaround for a browser bug, or a non-obvious constraint.
+
+```ts
+// Bad: restates the code
+// Increment the counter
+count++
+
+// Good: explains the reason
+// Start from 1 because the CMS uses 1-based page numbering
+const page = index + 1
+```
+
+Remove all commented-out code before opening a PR. Use version control to retrieve deleted code — that is what git is for.
+
+---
+
+## Non-Negotiables
+
+Every PR must satisfy these checks before it is reviewed:
+
+<Check>No `console.log` statements in merged code. Use a logger or remove them.</Check>
+<Check>No `any` types. Use `unknown`, a union type, or a defined interface.</Check>
+<Check>No hardcoded strings that should be environment variables (API keys, base URLs, secrets).</Check>
+<Check>All `<img>` and `<Image>` elements have meaningful `alt` attributes. Decorative images use `alt=""`.</Check>
+<Check>All interactive elements are keyboard-accessible and have visible focus states.</Check>
+<Check>No inline `style` attributes except for dynamic CSS custom properties (e.g. `style={{ '--offset': scrollY }}`).</Check>
+
+These are not style preferences — they are quality and accessibility baselines. A PR that fails any of these points will be sent back regardless of how good the rest of the code is.

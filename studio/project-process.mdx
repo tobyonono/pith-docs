@@ -1,0 +1,84 @@
+---
+title: "How Pith Runs Projects: Process and Phases"
+sidebarTitle: "Project Process"
+description: "A step-by-step look at how Pith approaches every engagement — from discovery and design to development, review, and launch."
+---
+
+## How Projects Run
+
+Every project is different — different clients, constraints, ambitions, and starting points. But the underlying process is consistent: we follow a structured sequence that keeps work moving, surfaces problems early, and makes sure no one is ever surprised by what lands in their inbox.
+
+Below is the full project lifecycle as Pith runs it.
+
+<Steps>
+  <Step title="Discovery & Brief">
+    Before any design or code touches a screen, we get aligned on what we're actually building — and why.
+
+    This phase covers: understanding the client's goals, audience, and how they'll measure success; reviewing existing brand assets, technical environments, and any constraints; and agreeing on scope, timeline, and budget. A good discovery saves multiples of its own time later. We don't skip it.
+
+    **Output:** A written project brief and scope document, agreed by both sides before work begins.
+  </Step>
+  <Step title="Design & Exploration">
+    With the brief confirmed, we move into creative exploration. This is the most divergent phase — intentionally so.
+
+    We develop concept directions in Figma, gather moodboards and references to anchor the visual language, and present options that represent genuinely different approaches rather than subtle variations. The goal is to surface the right direction, not to show everything is possible.
+
+    **Output:** Client review round 1 — concept directions presented with rationale.
+  </Step>
+  <Step title="Design Refinement">
+    Once a direction is selected, we develop it to full fidelity. This means every key page and state, not just hero screens — including responsive breakpoints, interactive states, and edge cases.
+
+    A component library is built in Figma alongside the page designs, forming the handoff foundation for development.
+
+    **Output:** Client review round 2 — full-fidelity designs and component documentation.
+  </Step>
+  <Step title="Development Kickoff">
+    With designs signed off, development begins in earnest. This phase is about laying the foundations correctly: environment setup, repository initialisation, CMS schema definition, and CI/CD pipeline configuration.
+
+    Design-to-dev handoff begins here — we walk through Figma together and flag anything that needs clarification before it becomes a problem mid-build.
+
+    **Output:** Running development environment, CMS structure, and a clear build plan.
+  </Step>
+  <Step title="Build Phase">
+    The core of the project. Frontend and backend work proceeds in parallel where possible, with components built against the design system and integrated with the CMS as they're completed.
+
+    We run weekly check-ins to share progress and surface blockers early. All bugs and feedback are tracked in Linear or Notion — nothing lives in email or chat threads.
+
+    **Output:** A staging environment updated continuously throughout the build.
+  </Step>
+  <Step title="QA & Review">
+    Before anything goes to the client for final sign-off, we run our own thorough QA pass.
+
+    This covers: cross-browser and cross-device testing; an accessibility audit against WCAG 2.1 AA; Lighthouse scores across performance, accessibility, SEO, and best practices; and a full content review for placeholder text, broken links, and missing assets.
+
+    The client then completes a final walkthrough on staging, with a structured feedback window before launch is confirmed.
+
+    **Output:** QA report, resolved issues list, and client sign-off for launch.
+  </Step>
+  <Step title="Launch">
+    Launch day follows a pre-defined checklist — no improvising under pressure.
+
+    The checklist covers: final backups, DNS cutover, SSL verification, redirect checks, analytics confirmation, and smoke testing on the live environment. We monitor closely in the hours and days after launch.
+
+    **Output:** Live site, post-launch monitoring, and a launch confirmation note.
+  </Step>
+  <Step title="Handover & Support">
+    The project doesn't end at launch. We provide CMS training sessions for the client team, written documentation for key workflows (content updates, new pages, user management), and a structured handover of all credentials and assets.
+
+    For clients who want continued support, we offer a monthly retainer covering maintenance, minor updates, monitoring, and priority response.
+
+    **Output:** Training session, documentation, full asset handover, and optional retainer proposal.
+  </Step>
+</Steps>
+
+---
+
+## Project Communication
+
+Staying aligned throughout a project doesn't require constant meetings — it requires the right communication at the right cadence.
+
+**Weekly async updates** are delivered via Loom or Notion at the end of each working week. These cover what was completed, what's coming next, and any decisions or input needed from the client. Clients can watch, read, and respond in their own time.
+
+**Figma comments** are used for all design feedback. Comments live in context — attached to specific elements — so feedback is always legible and actionable. No decoding email threads to understand what someone meant.
+
+**GitHub pull requests** are used for code review on every feature or fix. PRs include a summary of changes, screenshots or screen recordings where relevant, and a checklist of things to verify. This creates a clear, searchable record of every development decision.

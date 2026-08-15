@@ -1,0 +1,117 @@
+---
+title: "Typography Standards and Type Scale Guidelines"
+sidebarTitle: "Typography"
+description: "Pith's approach to type selection, scale, pairing, and the Figma text styles that keep every project consistent and readable."
+---
+
+## Type Philosophy
+
+Typography is not decoration — it is the primary vehicle through which a product communicates. Every typeface choice is a cultural statement. The wrong typeface at the wrong weight in the wrong context undermines credibility before a single word is read.
+
+At Pith, we select typefaces with intention. We do not default to system fonts because they are convenient, nor do we reach for fashionable grotesques because they are everywhere. We ask: what does this brand sound like? What kind of reader are we designing for? What does this typeface say about this product before the user reads a word?
+
+Custom typefaces can be one of the most powerful brand differentiators available — they are impossible to accidentally replicate and carry no prior associations. A bespoke typeface signals a level of craft and commitment that generic choices simply cannot match.
+
+<Tip>
+When evaluating typefaces for a project, test them at both display sizes and small body sizes. A face that looks stunning at 72px may fall apart at 14px — check optical sizing, spacing, and legibility at every scale level before committing.
+</Tip>
+
+---
+
+## Type Scale
+
+We use a modular scale — typically a **1.25 (Major Third)** or **1.333 (Perfect Fourth)** ratio — to generate a harmonious, proportional hierarchy. Sizes are then rounded to practical pixel values for implementation consistency.
+
+The standard Pith type scale:
+
+```
+display/2xl — 72px / 80px line-height
+display/xl  — 60px / 72px line-height
+heading/h1  — 48px / 56px line-height
+heading/h2  — 36px / 44px line-height
+heading/h3  — 28px / 36px line-height
+heading/h4  — 22px / 32px line-height
+body/lg     — 18px / 28px line-height
+body/md     — 16px / 24px line-height
+body/sm     — 14px / 20px line-height
+label/sm    — 12px / 16px line-height
+```
+
+Line-height values are chosen to ensure comfortable reading at each size. Tighter leading at display sizes, more generous leading at body sizes.
+
+---
+
+## Figma Text Styles
+
+Every text property applied in Figma must be a named text style. Freehand type — where a designer manually sets a font, size, and weight without creating a style — is not permitted.
+
+Style names must mirror the scale above: `display/2xl`, `heading/h2`, `body/md`, and so on. This ensures that when a developer inspects a component, the style name provides meaningful context rather than a raw pixel value.
+
+<Tip>
+Create your text styles before you start designing screens. Establishing the scale upfront prevents the gradual font-size sprawl that occurs when designers pick "close enough" sizes as they go.
+</Tip>
+
+When a project uses a second typeface (see [Pairing Rules](#pairing-rules) below), prefix the style with the typeface role: `display/2xl` for the expressive face, `body/md` for the workhorse. If both share a style name the consumer component should define which style applies to which element.
+
+---
+
+## Font Weight Usage
+
+Weights are not interchangeable across the scale. We define weight usage as follows:
+
+| Scale level | Weight | Numeric value |
+|---|---|---|
+| `display/*` | Bold | 700 |
+| `heading/h1–h2` | Bold | 700 |
+| `heading/h3–h4` | Semibold | 600 |
+| `body/*` | Regular | 400 |
+| `label/*` | Medium | 500 |
+
+Avoid mixing weights within a single block of continuous body copy. Weight contrast works best as a hierarchy signal between distinct elements, not within a paragraph.
+
+<Tip>
+If a typeface doesn't have a true 600 weight, test whether 500 or 700 better serves the heading role — don't fake weight with letter-spacing or CSS `font-weight` values the typeface doesn't support.
+</Tip>
+
+---
+
+## Line Length and Readability
+
+The optimal reading line length for body text is **60–75 characters**. Lines shorter than 45 characters create choppy rhythm; lines longer than 85 characters force uncomfortable eye travel.
+
+This means body text must **never span full-bleed on wide viewports**. A `max-width` constraint on prose containers is mandatory — typically `65ch` or `720px` depending on implementation convention.
+
+Apply this to all `body/*` and `label/*` contexts. Display text and headings are exempt — they are read in short bursts and benefit from wider spans.
+
+---
+
+## Responsive Typography
+
+Use CSS `clamp()` for fluid type scaling across viewport widths. This eliminates abrupt size jumps at breakpoints and keeps the scale feeling proportional at every viewport.
+
+```css
+/* Display heading: scales from 2.5rem at mobile to 4.5rem at desktop */
+font-size: clamp(2.5rem, 5vw + 1rem, 4.5rem);
+
+/* Body text: scales from 1rem to 1.125rem */
+font-size: clamp(1rem, 4vw, 1.125rem);
+```
+
+The `clamp()` function accepts three values: `minimum`, `preferred (viewport-relative)`, `maximum`. The minimum ensures legibility at small sizes; the maximum prevents text from becoming overwhelming at very large viewports.
+
+<Tip>
+Use a `clamp()` calculator (such as Utopia.fyi) to generate fluid type scales that step cleanly between your defined minimum and maximum values without manual calculation.
+</Tip>
+
+---
+
+## Pairing Rules
+
+When a project calls for two typefaces, the pairing must serve a clear functional division:
+
+- **One workhorse face** — optimised for body text and UI labels. Usually a humanist sans-serif or a legible serif. It should be invisible in the best possible sense: the reader focuses on the words, not the letterforms.
+- **One expressive face** — used only at display and large heading sizes. This face carries personality and brand energy.
+
+**Never pair two expressive or display faces.** The result is visual noise — two competing personalities with no hierarchy.
+
+Contrast in pairing works best when it is clear and intentional: serif paired with sans-serif, geometric paired with humanist, a neutral paired with a distinctive. Subtle pairings where both faces feel "similar but different" rarely read as a deliberate choice.

@@ -1,0 +1,129 @@
+---
+title: "Next.js Project Structure at Pith"
+sidebarTitle: "Project Structure"
+description: "The standard folder structure Pith uses for Next.js projects — from App Router layout to component organisation and shared utilities."
+---
+
+A consistent folder structure means every Pith developer knows where to look for things and where to put new things — regardless of which project they're working on. The structure below is the standard for all new Next.js projects using the App Router.
+
+## Directory Tree
+
+```
+├── app/                    # Next.js App Router
+│   ├── (marketing)/        # Route group
+│   │   ├── about/
+│   │   │   └── page.tsx
+│   │   └── page.tsx        # Home page
+│   ├── api/                # API routes
+│   │   └── revalidate/
+│   │       └── route.ts
+│   ├── globals.css
+│   └── layout.tsx          # Root layout
+├── components/
+│   ├── ui/                 # Primitive UI components
+│   │   ├── Button.tsx
+│   │   ├── Input.tsx
+│   │   └── index.ts
+│   ├── layout/             # Layout components
+│   │   ├── Header.tsx
+│   │   ├── Footer.tsx
+│   │   └── Navigation.tsx
+│   └── sections/           # Page-level section components
+│       ├── HeroSection.tsx
+│       └── FeaturesGrid.tsx
+├── lib/                    # Utilities and helpers
+│   ├── sanity/
+│   │   ├── client.ts
+│   │   ├── queries.ts
+│   │   └── types.ts
+│   ├── utils.ts
+│   └── constants.ts
+├── public/                 # Static assets
+│   ├── fonts/
+│   └── images/
+├── styles/                 # Global and module CSS
+├── types/                  # Global TypeScript types
+├── .env.local
+├── next.config.ts
+├── tailwind.config.ts
+└── tsconfig.json
+```
+
+---
+
+## `app/` — The App Router
+
+The `app/` directory owns routing, layouts, and API handlers. Every `page.tsx` maps to a URL; every `layout.tsx` wraps a segment of the route tree.
+
+**What goes here:** Pages, layouts, loading and error boundaries, API route handlers, and `globals.css`.
+
+**What does NOT go here:** Reusable components, utility functions, or business logic. If a file is imported by more than one page, it belongs in `components/` or `lib/`.
+
+### Route Groups `(marketing)`
+
+Folders wrapped in parentheses — e.g. `(marketing)` — are **route groups**. They let you share a layout across a set of pages without adding a segment to the URL. The `(marketing)` group might share a marketing-focused layout with a top banner, while `(app)` shares an authenticated dashboard layout. The brackets are invisible to the router; `/about` is still `/about`.
+
+<Note>
+  Route groups are the correct way to apply different root layouts within a single Next.js project. Do not try to handle layout variations purely with conditional rendering inside a single layout file.
+</Note>
+
+---
+
+## `components/` — Three Tiers
+
+Components are organised into three sub-folders with clearly different responsibilities:
+
+### `components/ui/`
+Primitive, stateless, reusable UI building blocks: `Button`, `Input`, `Badge`, `Card`, `Modal`. These have no knowledge of the application's data or business logic. They accept props and render markup. Think of this as your internal design system.
+
+### `components/layout/`
+Structural components that frame pages: `Header`, `Footer`, `Navigation`, `Sidebar`. These may fetch data or hold state, but their job is chrome — not content.
+
+### `components/sections/`
+Page-level building blocks: `HeroSection`, `FeaturesGrid`, `TestimonialsCarousel`. These are larger compositions assembled from `ui/` and `layout/` components. They are aware of the application's content model and may receive CMS-shaped data as props.
+
+---
+
+## `lib/` — Utilities, Clients, and Constants
+
+`lib/` contains everything that is not a component: CMS clients, GROQ queries, data-fetching helpers, formatting utilities, and project-wide constants.
+
+**`lib/sanity/`** holds the Sanity client configuration (`client.ts`), all GROQ queries (`queries.ts`), and the TypeScript types generated from or matching the Sanity schema (`types.ts`). Keeping queries here — rather than scattered through page files — makes them easy to find, reuse, and test.
+
+**`lib/utils.ts`** holds generic utility functions: date formatting, slug generation, class name helpers. If a function is used in more than one place, it lives here.
+
+**`lib/constants.ts`** holds project-wide constants: site metadata, animation durations, breakpoint values.
+
+---
+
+## `public/` — Static Assets
+
+Files placed in `public/` are served directly at the root URL. `/public/images/logo.svg` is accessible at `https://example.com/images/logo.svg`. Next.js does not process these files.
+
+**What goes here:** Fonts, `favicon.ico`, `og-image.png`, and images that cannot go through `next/image` optimisation.
+
+**What does NOT go here:** Component-specific images that are better imported directly, or anything that should be fetched from a CDN.
+
+---
+
+## `types/` — Global TypeScript Types
+
+Shared types that are not tied to a specific CMS schema or component. Examples: `NavigationItem`, `SiteConfig`, `Locale`. Types that belong to a specific domain (e.g. Sanity) live closer to that domain in `lib/sanity/types.ts`.
+
+---
+
+## Barrel Exports
+
+<Tip>
+  Add an `index.ts` to any folder whose contents are imported frequently from outside. A barrel export lets consumers write `import { Button, Input } from '@/components/ui'` instead of reaching into individual files. Keep barrel files thin — they should only re-export, never contain logic.
+</Tip>
+
+Use barrel exports in `components/ui/` and anywhere else that functions as a public API within the codebase. Do **not** add barrel files to `app/` — Next.js owns that folder's module graph.
+
+---
+
+## Environment Variables
+
+`.env.local` is git-ignored and holds all secrets and environment-specific config. A committed `.env.example` documents every required variable with placeholder values.
+
+Access server-side variables directly with `process.env.VARIABLE_NAME`. Access client-side variables (prefixed `NEXT_PUBLIC_`) the same way — Next.js statically replaces them at build time. Never dynamically construct environment variable names; the static analyser cannot follow string interpolation.

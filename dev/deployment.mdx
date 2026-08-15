@@ -1,0 +1,58 @@
+---
+title: "Deployment and Hosting at Pith"
+sidebarTitle: "Deployment"
+description: "How Pith deploys web projects — from Vercel for Next.js to WP Engine for WordPress — including environment management and pre-launch checklists."
+---
+
+## Next.js — Vercel
+
+Vercel is Pith's default deployment target for all Next.js projects. Connect the GitHub repository to a Vercel project and deployments are fully automated: every push to `main` triggers a production deployment, and every pull request generates an isolated preview deployment with its own URL.
+
+Preview deployments are a core part of the review process — share the preview URL in the PR for design and client sign-off before anything touches production. Vercel's build logs and deployment history make it straightforward to identify and roll back a problematic release if needed.
+
+## Environment Setup on Vercel
+
+Vercel separates environment variables by target:
+
+- **Production** — applies to the `main` branch deployment only
+- **Preview** — applies to all branch and PR deployments
+- **Development** — available when running `vercel env pull` locally
+
+Never commit `.env.local` or any file containing real credentials to the repository. All environment variables are added and managed through the Vercel dashboard (or via the Vercel CLI). Use `.env.example` in the repo to document which variables are required.
+
+For secrets shared across environments (e.g. a Sanity read token), set them in both Production and Preview environments in the Vercel dashboard.
+
+## WordPress — WP Engine
+
+WP Engine is Pith's preferred managed WordPress host. It handles server security, automatic backups, and PHP version management, freeing the team to focus on the build rather than infrastructure.
+
+WP Engine provides three environments per install out of the box:
+
+**Development → Staging → Production**
+
+Use WP Engine's built-in push/pull tools to synchronise databases and file assets between environments. Always push from Development → Staging → Production — never pull from Production to overwrite upstream environments unless explicitly recovering from an issue.
+
+## Domain & DNS
+
+Pith manages all project DNS through Cloudflare. When pointing a domain to a new host:
+
+1. Update nameservers to Cloudflare's assigned pair
+2. Add the required A/CNAME records for the host
+3. Enable Cloudflare proxying (the orange cloud icon) on all public-facing records
+
+The Cloudflare proxy provides DDoS protection, edge caching, and automatic HTTPS — enable it on every production domain without exception. Use Cloudflare's Page Rules or Transform Rules to handle www-to-apex redirects and any required URL rewrites at the DNS layer.
+
+## Pre-Launch Checklist
+
+Run through this checklist before every production launch. All items must be confirmed before a site goes live.
+
+- [ ] Environment variables set in production
+- [ ] Custom domain configured and SSL certificate active
+- [ ] All images have descriptive `alt` text (empty `alt=""` for decorative images)
+- [ ] Lighthouse score ≥ 90 on mobile
+- [ ] No `console.log` statements in production code
+- [ ] 404 page styled, branded, and tested
+- [ ] Sitemap and `robots.txt` in place and verified
+- [ ] Analytics configured (GA4 or Plausible)
+- [ ] Form submissions tested end-to-end, including confirmation emails
+- [ ] Reduced motion experience tested with `prefers-reduced-motion: reduce`

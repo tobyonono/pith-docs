@@ -1,0 +1,76 @@
+---
+title: "Performance and Accessibility Standards"
+sidebarTitle: "Performance"
+description: "The performance targets, optimisation techniques, and accessibility requirements Pith applies to every web project before launch."
+---
+
+## Performance Targets
+
+Pith holds every project to the following minimum benchmarks before launch:
+
+| Metric | Target |
+|---|---|
+| Lighthouse (mobile) | ≥ 90 |
+| Lighthouse (desktop) | ≥ 95 |
+| Largest Contentful Paint (LCP) | < 2.5s |
+| Cumulative Layout Shift (CLS) | < 0.1 |
+| Interaction to Next Paint (INP) | < 200ms |
+
+These are floors, not ceilings. Aim higher where possible — a poorly performing site reflects directly on the client's brand and affects search ranking.
+
+## Image Optimisation
+
+Images are consistently the largest contributor to page weight and LCP. Follow these rules on every project:
+
+- Use `next/image` for all images — it handles automatic format conversion to WebP or AVIF, responsive sizing, and lazy loading out of the box
+- Always provide a `sizes` attribute matching the image's actual rendered dimensions at each breakpoint — this prevents the browser from downloading a full-width image for a thumbnail slot
+- Use the `priority` prop **only** on the above-the-fold hero or LCP image — applying it broadly defeats the lazy-loading benefit
+- Compress source images before uploading to the CMS using [TinyPNG](https://tinypng.com/) or [Squoosh](https://squoosh.app/) — `next/image` optimises delivery, but it cannot recover detail lost in an over-compressed source
+
+## Font Loading
+
+Web fonts are a common source of layout shift (CLS) and render-blocking. Pith's standard approach:
+
+- Use `next/font` to self-host fonts and inject them directly into the CSS — this eliminates the external network request to Google Fonts or Typekit and removes layout shift caused by late-loading fonts
+- Prefer **variable fonts** wherever available. A single variable font file covers all weights and styles, reducing HTTP requests and total transfer size compared to loading multiple static font files
+- Subset fonts to only the character ranges needed for the project's target language — a Latin subset is significantly smaller than a full Unicode font file
+
+## JavaScript Optimisation
+
+JavaScript is the most expensive resource per byte — it must be parsed, compiled, and executed before it contributes to the page.
+
+- Audit bundle composition with [`@next/bundle-analyzer`](https://www.npmjs.com/package/@next/bundle-analyzer) before every launch. Look for unexpectedly large dependencies and duplicated packages
+- Lazy-load below-the-fold components using `next/dynamic` with a loading fallback — this keeps the initial bundle lean and defers non-critical code until it is needed
+- Scrutinise every third-party script before adding it. Analytics, chat widgets, and marketing tags can collectively add hundreds of kilobytes. Every script must justify its payload weight against the value it provides
+
+## Accessibility (A11y) Requirements
+
+Accessibility is not optional at Pith — WCAG 2.1 AA compliance is the baseline requirement on all projects, without exception.
+
+**Semantic HTML:** Use the correct element for the job. Structure every page with `<header>`, `<main>`, `<nav>`, `<footer>`, `<article>`, and `<section>` so screen readers and assistive technologies can navigate the page meaningfully without relying on visual layout.
+
+**Images:** Every `<img>` must have an `alt` attribute. Write descriptive alt text that conveys the meaning or function of the image. For purely decorative images, use `alt=""` — this tells screen readers to skip the element entirely.
+
+**Focus management:** Focus indicators must be visible on all interactive elements (`<a>`, `<button>`, `<input>`, etc.). Never use `outline: none` without providing an equally clear custom focus style.
+
+**Skip navigation:** Include a skip-to-content link as the first focusable element on every page. This allows keyboard and screen reader users to bypass repeated navigation and jump directly to the main content.
+
+**Keyboard interaction:** All dropdowns, modals, and custom interactive components must be fully keyboard-navigable. Modals must trap focus while open and return focus to the trigger element on close.
+
+**Colour contrast:**
+- Body text: minimum **4.5:1** contrast ratio against its background
+- Large text (18pt+) and UI components: minimum **3:1** contrast ratio
+
+**Reduced motion:** Wrap animations in a `prefers-reduced-motion` media query or use the `useReducedMotion` hook. Users who have enabled reduced motion in their OS settings should never experience vestibular-triggering animations.
+
+## Testing Tools
+
+| Tool | Use |
+|---|---|
+| Lighthouse | Automated performance, accessibility, and SEO scoring — built into Chrome DevTools |
+| axe DevTools | Browser extension for in-page accessibility analysis |
+| WAVE | Web Accessibility Evaluation Tool — visual overlay of accessibility issues |
+| VoiceOver | macOS and iOS screen reader for manual testing |
+| NVDA | Free Windows screen reader for cross-platform verification |
+
+Run Lighthouse on the deployed preview URL, not `localhost` — network conditions and CDN caching affect real scores. Test with VoiceOver on mobile as a final manual check before every launch.

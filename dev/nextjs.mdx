@@ -1,0 +1,124 @@
+---
+title: "Next.js Development Standards at Pith"
+sidebarTitle: "Next.js"
+description: "How Pith builds with Next.js — App Router conventions, data fetching patterns, image optimisation, and performance best practices."
+---
+
+Pith builds every new project on **Next.js 14+** with the App Router. This page captures the conventions, patterns, and decisions we've standardised across the studio so that every project feels coherent and every developer can orient themselves quickly.
+
+## Version & Setup
+
+Always use Next.js 14 or later. Bootstrap new projects with the official CLI, opting in to TypeScript and Tailwind from the start:
+
+```bash
+npx create-next-app@latest my-project \
+  --typescript \
+  --tailwind \
+  --eslint \
+  --app
+```
+
+Never start from a blank repo — `create-next-app` wires up the tsconfig, the ESLint config, and the App Router structure correctly from day one.
+
+## App Router Conventions
+
+<Tip>
+  **Server Components are the default.** Every component in the `app/` directory is a Server Component unless you explicitly opt out. Lean into this — it keeps the client bundle small and data fetching simple.
+</Tip>
+
+<Warning>
+  **Don't over-use `'use client'`.** Adding it to a component pulls that component *and every import it uses* into the client bundle. Push `'use client'` as far down the tree as possible — to the leaf component that actually needs interactivity, not to the page or layout wrapping it.
+</Warning>
+
+Only add `'use client'` when a component needs:
+- Interactive event handlers (`onClick`, `onChange`)
+- Browser-only APIs (`window`, `document`, `IntersectionObserver`)
+- React hooks that depend on client state (`useState`, `useEffect`, `useRef`)
+
+**Route groups** — `(group-name)` folders — let you share layouts across routes without the folder name appearing in the URL. Use them to separate marketing pages from dashboard pages, or to give the home route its own full-bleed layout.
+
+Use **parallel routes** (`@slot`) and **intercepting routes** only when the product genuinely requires them (modals that are deep-linkable, split-pane dashboards). They add complexity; don't reach for them by default.
+
+**Layouts should be minimal.** A layout persists across navigations without remounting, which is powerful but means any state or subscriptions it initialises stay alive for the entire session. Keep layouts to chrome: nav, footer, font loading, and global providers.
+
+## Data Fetching
+
+Prefer `async` Server Components for all data that's available at render time:
+
+```ts
+// Preferred: async Server Component
+async function ProjectsPage() {
+  const projects = await getProjects() // fetch from Sanity or API
+  return <ProjectGrid projects={projects} />
+}
+```
+
+For data that depends on user interaction or needs to stay fresh on the client, use **React Query** or **SWR**:
+
+```ts
+// For client-side state: React Query or SWR
+const { data, isLoading } = useQuery({
+  queryKey: ['projects'],
+  queryFn: fetchProjects,
+})
+```
+
+Never `useEffect` + `fetch` for data fetching. It's verbose, error-prone, and misses caching entirely.
+
+## Image Optimisation
+
+Always use `next/image`. Never use a bare `<img>` tag — it bypasses format conversion (WebP/AVIF), lazy loading, and size negotiation.
+
+```tsx
+<Image
+  src={imageUrl}
+  alt="Descriptive alt text"
+  width={800}
+  height={600}
+  sizes="(max-width: 768px) 100vw, 50vw"
+  priority // only for above-the-fold images
+/>
+```
+
+- **Always provide `sizes`** for any image that changes size across breakpoints — this is what tells the browser which source to download.
+- **`priority`** disables lazy loading and adds a `<link rel="preload">`. Use it only for the largest above-the-fold image (typically the hero). Using it everywhere defeats the purpose.
+- **`alt` must be descriptive.** Empty `alt=""` is only correct for decorative images.
+
+## Metadata
+
+Define metadata at the layout level with a template so page-level titles compose automatically:
+
+```ts
+// app/layout.tsx
+export const metadata: Metadata = {
+  title: { template: '%s | Client Name', default: 'Client Name' },
+  description: '...',
+  openGraph: { ... },
+}
+```
+
+Each page then exports only its own title and any overrides. This keeps root metadata in one place while letting pages remain independent.
+
+## Caching & Revalidation
+
+For CMS-backed sites (Sanity), use **on-demand ISR** triggered by webhooks rather than time-based revalidation. Tag every fetch:
+
+```ts
+const data = await fetch(url, {
+  next: { tags: ['projects'] }
+})
+```
+
+When Sanity publishes a change it calls a Pith revalidation route, which calls `revalidateTag('projects')` — only the affected pages rebuild, and the rest of the cache stays warm.
+
+Use `revalidatePath` for path-specific invalidation when a tag would be too broad.
+
+## Performance Checklist
+
+Before shipping any Next.js project:
+
+- [ ] **`loading.tsx`** files added at every data-fetching route segment for instant Suspense boundaries
+- [ ] **`error.tsx`** files added so errors degrade gracefully without a full white screen
+- [ ] **Static generation** confirmed for all content pages — avoid `dynamic = 'force-dynamic'` unless the page genuinely requires it (user-specific content, live data)
+- [ ] **Bundle analysis** run with `@next/bundle-analyzer` — check for unexpectedly large client chunks before launch
+- [ ] **Core Web Vitals** measured in Vercel Analytics or Lighthouse CI — LCP, CLS, and INP all green

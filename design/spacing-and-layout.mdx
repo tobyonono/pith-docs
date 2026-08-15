@@ -1,0 +1,112 @@
+---
+title: "Spacing, Grid, and Layout Standards"
+sidebarTitle: "Spacing & Layout"
+description: "The spacing scales, grid systems, and layout rules Pith uses to create consistent, well-proportioned interfaces across every screen size."
+---
+
+## Spacing Scale
+
+Consistent spacing is what separates interfaces that feel considered from ones that feel cobbled together. At Pith we use a **base-4 scale** — every spacing value is a multiple of 4px — to ensure proportional relationships across the full range from micro-adjustments to section-level layout.
+
+The standard Pith spacing scale:
+
+```
+spacing/1  —  4px
+spacing/2  —  8px
+spacing/3  — 12px
+spacing/4  — 16px
+spacing/5  — 20px
+spacing/6  — 24px
+spacing/8  — 32px
+spacing/10 — 40px
+spacing/12 — 48px
+spacing/16 — 64px
+spacing/20 — 80px
+spacing/24 — 96px
+```
+
+Note the intentional gap between `spacing/6` and `spacing/8`: there is no `spacing/7` (28px). This is by design — skipping a step in the mid-range encourages designers to make a deliberate choice between 24px and 32px rather than landing on an in-between value.
+
+<Warning>
+Never use arbitrary spacing values such as `13px`, `27px`, or `42px`. If a value isn't on the scale, it doesn't belong in the design. Arbitrary values break the visual rhythm, create inconsistencies that accumulate across components, and make systematic updates impossible. When in doubt, round to the nearest scale step.
+</Warning>
+
+---
+
+## Grid System
+
+We use a 12-column grid for all desktop layouts and a 4-column grid for mobile. This combination gives maximum layout flexibility while keeping the grid structure simple enough to use without constantly counting columns.
+
+| Setting | Desktop | Mobile |
+|---|---|---|
+| Columns | 12 | 4 |
+| Gutter | 24px | 16px |
+| Margin | 80px (default) | 20px |
+| Max content width | 1280px or 1440px | 100% |
+
+The **max content width** (1280px vs 1440px) is decided per-project based on the density of the content and the desired feel. Marketing sites with large photography often benefit from 1440px; data-heavy products typically feel more controlled at 1280px.
+
+In Figma, set up layout grids on your primary frame types (desktop, tablet, mobile) and lock them so all designers are working to the same structure. Use column grids — not uniform grids — so gutters and margins are explicitly defined.
+
+---
+
+## Section Spacing
+
+Vertical rhythm at the section level follows a set of standard values. Consistency here is what makes a long-scroll page feel intentionally paced rather than arbitrarily spaced.
+
+```
+Section padding (desktop): 120px top / 120px bottom
+Section padding (mobile):   64px top /  64px bottom
+Component gap within section: 40px – 64px
+Content block gap (e.g. heading + body + CTA): 24px – 32px
+```
+
+These values map directly to the spacing scale: 120px is `spacing/24 + spacing/6` but in practice is applied as a named token (`section/padding-y-desktop`) so it can be updated globally.
+
+---
+
+## Z-Index Scale
+
+Z-index values should never be arbitrary. Define and document every layer at the start of a project:
+
+```
+z-base:     0   — default document flow
+z-raised:   10  — slightly elevated elements (sticky headers, floating labels)
+z-dropdown: 100 — dropdown menus, select lists
+z-modal:    200 — dialogs and overlays
+z-toast:    300 — notification toasts
+z-tooltip:  400 — tooltips (always on top)
+```
+
+In code, define these as named CSS custom properties or a constants file. In Figma, use frame ordering and group structure to reflect the intended stacking — never rely on Figma's implicit layer order to represent z-index intent without documentation.
+
+---
+
+## Responsive Breakpoints
+
+Pith uses a breakpoint set aligned with Tailwind CSS defaults, ensuring that design handoff maps cleanly to code with no conversion required:
+
+```
+sm:  640px   — large phones / small tablets (landscape)
+md:  768px   — tablets (portrait)
+lg:  1024px  — tablets (landscape) / small laptops
+xl:  1280px  — standard desktop
+2xl: 1536px  — large desktop / wide monitors
+```
+
+Design mobile-first: start with the smallest viewport and progressively enhance for larger screens. This encourages content prioritisation and prevents the "desktop shrink" problem where mobile is an afterthought.
+
+---
+
+## Applying Spacing in Figma
+
+All spacing in Figma must be applied through **Auto Layout** — using gap and padding properties — never by manually positioning elements with the X/Y coordinate fields.
+
+Manual positioning means components cannot adapt, spacing cannot be audited systematically, and handoff measurements are unreliable. Auto Layout enforces the spacing relationships you intend and makes them legible at a glance.
+
+Best practices:
+
+- Define spacing values as **Figma variables** in a `Spacing` collection, mapped to the scale above.
+- Apply spacing variables to Auto Layout gap and padding fields — not raw numbers.
+- When a component needs to be a fixed size, use **fixed width/height** on the frame, but keep internal spacing variable-driven.
+- For spacing between sections on a page, use a dedicated `Section` frame with Auto Layout and a `section/padding-y` variable applied as vertical padding.

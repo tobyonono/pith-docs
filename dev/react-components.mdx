@@ -1,0 +1,118 @@
+---
+title: "React Component Patterns and Best Practices"
+sidebarTitle: "React Components"
+description: "How Pith writes React components — composition patterns, custom hooks, prop design, accessibility requirements, and the component conventions every project follows."
+---
+
+Consistent component authorship is what makes a codebase feel like one team wrote it. This page documents the patterns Pith has converged on after shipping many projects — not rules for the sake of rules, but decisions that have proven their value in maintenance and collaboration.
+
+## Component Anatomy
+
+Every component file follows the same top-to-bottom structure. Reviewers and new team members know exactly where to look for each piece:
+
+```tsx
+// 1. Imports
+// 2. Types
+// 3. Component function
+// 4. Subcomponents (if any)
+// 5. Helpers local to this component
+// Default export at the bottom
+```
+
+Put the default export at the **bottom** of the file, after the implementation. This means you read the types, then the component, then any private helpers — the narrative flows downward.
+
+## Prop Design
+
+Prefer **explicit over implicit** props. A component that accepts a `variant` prop that changes its appearance is clearer than one that infers appearance from context or from a combination of booleans.
+
+Use `variant`, `size`, and `disabled` as the standard naming convention — these mirror Figma variant property names intentionally, so the design–dev handoff stays unambiguous.
+
+For interactive elements, extend the native HTML element's props so consumers can still pass `onClick`, `aria-*`, `data-*`, and anything else the browser supports without Pith needing to forward them manually:
+
+```tsx
+type ButtonProps = ComponentPropsWithoutRef<'button'> & {
+  variant?: 'primary' | 'secondary' | 'ghost'
+  size?: 'sm' | 'md' | 'lg'
+  isLoading?: boolean
+}
+```
+
+This pattern works for any element — `ComponentPropsWithoutRef<'a'>` for links, `ComponentPropsWithoutRef<'input'>` for form fields. The `WithoutRef` variant is correct here because we're using function components, not class components, so we don't use `ref` from the type directly (use `forwardRef` separately when ref-forwarding is needed).
+
+## Custom Hooks
+
+Any time the same stateful or side-effectful logic appears in more than one component, extract it into a hook. Hooks are testable in isolation, trivially reusable, and keep components readable.
+
+```ts
+// hooks/useMediaQuery.ts
+function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = useState(false)
+  // ...
+  return matches
+}
+```
+
+**Common Pith hooks used across projects:**
+
+| Hook | Purpose |
+|---|---|
+| `useMediaQuery` | Responds to CSS breakpoints in JS |
+| `useScrollProgress` | Returns 0–1 scroll progress for a container |
+| `useInView` | Fires once (or repeatedly) when an element enters the viewport |
+| `useReducedMotion` | Reads `prefers-reduced-motion` — required for animated components |
+
+<Note>
+  **`useReducedMotion` is required for any animated component.** If a component triggers GSAP or CSS animations, it must call `useReducedMotion` and skip or simplify the animation when the user has requested reduced motion. This is a studio-wide accessibility baseline, not an optional enhancement.
+</Note>
+
+## Composition over Configuration
+
+When a component needs to handle many different internal layouts or content combinations, prefer **slot-based composition** over a proliferating list of boolean props.
+
+```tsx
+// ❌ Avoid — combinatorial explosion of props
+<Card
+  showImage
+  imagePosition="top"
+  showBadge
+  badgeText="New"
+  showFooter
+  footerContent={<Button>Read more</Button>}
+/>
+
+// ✅ Good — composable
+<Card>
+  <Card.Image src={...} />
+  <Card.Body>
+    <Card.Title>{title}</Card.Title>
+  </Card.Body>
+</Card>
+```
+
+The compound component pattern (`Card.Image`, `Card.Body`, etc.) keeps the parent API simple while giving consumers full control over structure. Implement subcomponents as named exports on the parent, attached with `ComponentName.SubName = SubComponent`.
+
+Where slot-based composition isn't the right fit, **render props** or `children` as a function can give consumers controlled access to internal state without exposing it via props.
+
+## Accessibility Requirements
+
+Every component Pith ships must meet these minimums before handoff:
+
+- **Semantic HTML** — use `<button>` for actions, `<a>` for navigation, `<nav>` for navigation landmarks. Never `<div onClick>`.
+- **`aria-label` on icon-only buttons** — if a button has no visible text, it must have an `aria-label` that describes the action.
+- **Keyboard navigation** — all interactive elements must be reachable and operable via keyboard. Focus styles must be visible (never `outline: none` without a custom alternative).
+- **Screen reader testing** — test with VoiceOver (macOS) or NVDA (Windows) before calling a component done.
+
+Accessibility is not a QA pass at the end — it's built in during component authorship.
+
+## Performance
+
+React's memoisation tools are not free. Every `React.memo`, `useMemo`, and `useCallback` call adds overhead: the comparison runs on every render whether or not the cached value is used.
+
+**The rule:** only reach for memoisation after you've profiled with React DevTools and confirmed a real performance problem. A component re-rendering is not automatically a problem — unnecessary renders only matter if they cause visible jank.
+
+When you do need to optimise:
+- `React.memo` — memoises the rendered output of a component given the same props
+- `useMemo` — memoises an expensive computed value
+- `useCallback` — stabilises a function reference (typically to satisfy a memoised child component's props)
+
+Profile first. Optimise second.

@@ -1,0 +1,189 @@
+---
+title: "Figma Naming Conventions for Pith Projects"
+sidebarTitle: "Naming Conventions"
+description: "How Pith names layers, frames, components, and variables in Figma — conventions that keep files readable and handoff smooth."
+---
+
+Good naming is invisible infrastructure. When every layer, component, and variable follows a shared convention, files stay navigable across designers, developers, and clients — whether a project is two weeks old or two years old. These are Pith's conventions for Figma.
+
+## General Rules
+
+- Use **slash notation** (`/`) to express hierarchy within a name
+- Use **kebab-case** for file names: `acme-homepage-redesign.fig`
+- Use **Title Case** for component names: `Button`, `Card`, `Nav`
+- **No spaces in layer names** — use `/` to denote hierarchy or `-` to separate words within a level
+- Be descriptive over brief. `Card/Product/Hover` is always better than `Rectangle 14`
+
+<Warning>
+The most common anti-pattern at Pith — and in Figma files everywhere — is leaving auto-generated names in place: `Frame 47`, `Group 3`, `Rectangle 12`. These names make handoff painful and design review slower. Any time you create a layer, name it before moving on. Treat unnamed layers as broken layers.
+</Warning>
+
+---
+
+## Layer Naming
+
+### Frames
+
+Frames are the primary structural unit in a Figma file. Name them to reflect their purpose on the page or in the layout.
+
+```
+Hero Section
+Nav/Desktop
+Nav/Mobile
+Card/Product
+Card/Blog
+Footer
+Modal/Confirmation
+```
+
+Use the `/` separator to group related frames in the layers panel — it makes scanning large files significantly faster.
+
+### Groups
+
+Only use groups for loose visual collections that don't warrant a component or frame boundary. If a group has layout logic, convert it to an auto-layout frame instead.
+
+```
+Decorative/Background Blobs
+Illustration/Homepage Hero
+```
+
+### Auto-Layout Frames
+
+Where possible, name auto-layout frames using their semantic HTML equivalent. This makes it easier for developers to map the design to markup.
+
+```
+header
+nav
+main
+section/hero
+section/features
+article/card
+footer
+```
+
+<Note>
+You don't have to follow HTML semantics exactly, but naming frames in a way that hints at their role in the DOM reduces back-and-forth during handoff.
+</Note>
+
+---
+
+## Component Naming
+
+All components follow the pattern: **`ComponentName/Variant/State`**
+
+### Buttons
+
+```
+Button/Primary/Default
+Button/Primary/Hover
+Button/Primary/Focus
+Button/Primary/Disabled
+Button/Secondary/Default
+Button/Secondary/Hover
+Button/Ghost/Default
+```
+
+### Icons
+
+Icons use kebab-case after the `Icon/` prefix, matching icon library names in code:
+
+```
+Icon/arrow-right
+Icon/arrow-left
+Icon/close
+Icon/menu
+Icon/chevron-down
+Icon/external-link
+```
+
+### Property Names
+
+Use Figma's **component properties** with names that mirror code props. If a developer will call the prop `size`, the Figma property should be called `size` — not `Size Variant` or `Big/Small`.
+
+```
+size → sm | md | lg
+variant → primary | secondary | ghost
+disabled → true | false
+iconLeft → [instance swap]
+label → [text]
+```
+
+<Tip>
+Align property names with the team's component library conventions (e.g., the Next.js/React codebase) during kickoff. Five minutes of sync upfront saves hours of handoff confusion.
+</Tip>
+
+---
+
+## Page Naming in Figma Files
+
+Every Figma file at Pith follows the same page order and naming:
+
+| Page | Purpose |
+|------|---------|
+| `Cover` | Thumbnail and project metadata |
+| `Design` | Active, live design work |
+| `Components` | Isolated component explorations |
+| `Archive` | Older iterations — kept for reference, not active |
+
+Additional pages (e.g., `Prototypes`, `Specs`) can be added as needed, but the four above are always present.
+
+---
+
+## Variable & Style Naming
+
+### Colour Variables
+
+```
+brand/primary
+brand/secondary
+brand/accent
+
+neutral/0
+neutral/100
+neutral/200
+...
+neutral/900
+
+semantic/error
+semantic/warning
+semantic/success
+semantic/info
+```
+
+### Text Styles
+
+```
+heading/h1
+heading/h2
+heading/h3
+heading/h4
+
+body/lg
+body/md
+body/sm
+
+label/lg
+label/md
+label/sm
+
+caption/default
+```
+
+### Spacing Tokens
+
+Use a numeric scale that maps to your base unit (typically 4px):
+
+```
+spacing/1   → 4px
+spacing/2   → 8px
+spacing/3   → 12px
+spacing/4   → 16px
+spacing/6   → 24px
+spacing/8   → 32px
+spacing/12  → 48px
+spacing/16  → 64px
+```
+
+<Tip>
+These spacing token names should match the scale used in the codebase (e.g., Tailwind's spacing scale or a custom CSS custom property set). Agreeing on the scale at project kickoff means design and code stay in sync automatically.
+</Tip>

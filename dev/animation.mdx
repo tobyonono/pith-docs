@@ -1,0 +1,160 @@
+---
+title: "Animation with GSAP: Pith's Approach and Conventions"
+sidebarTitle: "Animation"
+description: "How Pith uses GSAP for web animation — setup, common patterns, scroll-triggered animations, and accessibility requirements for motion."
+---
+
+Animation at Pith is intentional, purposeful, and performant. It should guide attention and reinforce personality — not add noise. GSAP is the tool we reach for when animation needs to go beyond what CSS transitions can achieve cleanly.
+
+## Why GSAP
+
+CSS transitions and animations handle simple state changes well. But for **scroll-driven reveal sequences**, **complex timelines**, **staggered entrance animations**, and **parallax**, CSS quickly becomes unmaintainable. GSAP gives us:
+
+- Sub-millisecond timing precision and hardware-accelerated transforms
+- A composable timeline API for sequencing complex multi-element animations
+- `ScrollTrigger` — the most capable scroll animation library available
+- First-class React integration via `@gsap/react`
+- Predictable cleanup and lifecycle management
+
+GSAP is not the right tool for hover transitions, focus styles, or simple show/hide — CSS handles those better. Use GSAP where its power is genuinely needed.
+
+## Setup & Plugins
+
+Register plugins once, at the module level, before any component uses them:
+
+```ts
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { useGSAP } from '@gsap/react'
+
+gsap.registerPlugin(ScrollTrigger)
+```
+
+If you're using other GSAP plugins (Flip, Draggable, MotionPath), register them in the same place. Do not register plugins inside component bodies — it causes multiple registration warnings and is wasteful.
+
+## The `useGSAP` Hook
+
+<Tip>
+  Always pass `{ scope: container }` to `useGSAP`. This scopes all selector-based queries (like `'.hero-title'`) to your container ref, preventing GSAP from accidentally matching elements outside the component. Without it, string selectors become global — a subtle but hard-to-debug issue on pages with repeated components.
+</Tip>
+
+Use GSAP's official React hook for all animation inside components. It handles cleanup automatically when the component unmounts, killing ScrollTriggers and reversing tweens correctly:
+
+```tsx
+function HeroSection() {
+  const container = useRef<HTMLDivElement>(null)
+
+  useGSAP(() => {
+    gsap.from('.hero-title', {
+      y: 40,
+      opacity: 0,
+      duration: 0.8,
+      ease: 'power3.out',
+    })
+  }, { scope: container })
+
+  return <div ref={container}>...</div>
+}
+```
+
+Never use `useEffect` for GSAP animations. `useEffect` doesn't integrate with GSAP's React reconciliation model and leads to double-fire issues in Strict Mode and stale cleanup on navigation.
+
+## ScrollTrigger Patterns
+
+For scroll-driven entrance animations, attach a `scrollTrigger` object to any tween or timeline:
+
+```ts
+gsap.from(element, {
+  opacity: 0,
+  y: 60,
+  scrollTrigger: {
+    trigger: element,
+    start: 'top 85%',
+    end: 'bottom 20%',
+    toggleActions: 'play none none reverse',
+  },
+})
+```
+
+`toggleActions` follows the pattern `onEnter onLeave onEnterBack onLeaveBack`. The value `'play none none reverse'` plays the animation when the element enters the viewport and reverses it when it leaves going upward — a natural, non-jarring default for content reveals.
+
+For **parallax effects**, use `scrub` to tie the animation to scroll position directly:
+
+```ts
+gsap.to(parallaxElement, {
+  yPercent: -30,
+  ease: 'none',
+  scrollTrigger: {
+    trigger: section,
+    start: 'top bottom',
+    end: 'bottom top',
+    scrub: true,
+  },
+})
+```
+
+`scrub: true` links the tween progress to the scroll progress 1:1. `scrub: 1.5` adds a lag (in seconds) for a smoother, more physical feel.
+
+## Easing Standards
+
+Consistent easing gives Pith's animations a coherent feel across projects. Use these as defaults:
+
+| Context | Ease |
+|---|---|
+| Entrances (elements coming in) | `power3.out` |
+| Exits (elements leaving) | `power2.in` |
+| UI interactions (menus, drawers) | `power2.inOut` |
+| Elastic / bounce | Use sparingly — playful UI only |
+
+`power3.out` is fast-in, slow-out — it feels decisive and energetic, which suits content reveals. Avoid linear eases for anything user-facing; they feel mechanical.
+
+## Reduced Motion — REQUIRED
+
+<Warning>
+  **Respecting `prefers-reduced-motion` is non-negotiable.** Some users experience motion sickness, vestibular disorders, or seizure risk from animated content. Every animated component at Pith must check this preference and skip or substitute the animation. This is a studio-wide accessibility requirement, not optional.
+</Warning>
+
+```tsx
+function useReducedMotion() {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+}
+
+// In your animation setup:
+const prefersReducedMotion = useReducedMotion()
+
+if (!prefersReducedMotion) {
+  // run GSAP animations
+}
+```
+
+For scroll reveals where the animation itself reveals content, make sure the content is **visible by default** and the GSAP starting state (`opacity: 0`, `y: 60`) is only applied when motion is allowed. Users with reduced motion must still see all content.
+
+## Common Patterns
+
+**Stagger reveals** — animate a list of cards or items in sequence:
+```ts
+gsap.from('.card', {
+  opacity: 0,
+  y: 30,
+  stagger: 0.1,
+  duration: 0.6,
+  ease: 'power3.out',
+})
+```
+
+**Parallax** — use `ScrollTrigger` with `scrub: true` as shown above. Keep parallax offsets modest (15–30%) — large values look impressive in demos but feel disorienting in production.
+
+**Text reveals** — use `clip-path` or `overflow: hidden` mask patterns to reveal text line by line. Wrap each line in a container with `overflow: hidden` and animate `y` from `100%` to `0%`.
+
+**Page transitions** — coordinate GSAP with Next.js route transitions using the `document.startViewTransition` API where browser support allows, falling back to a simple fade. Keep page transitions short (≤ 400ms) — they run on every navigation and compound quickly.
+
+**Timeline sequences** — for multi-step, multi-element sequences, always use a `gsap.timeline()` rather than individual tweens with manually calculated delays. Timelines are easier to adjust, pause, and reverse.
+
+```ts
+const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
+tl.from('.headline', { opacity: 0, y: 40, duration: 0.8 })
+  .from('.subheading', { opacity: 0, y: 20, duration: 0.6 }, '-=0.4')
+  .from('.cta', { opacity: 0, scale: 0.9, duration: 0.5 }, '-=0.3')
+```
+
+The `-=0.4` position parameter overlaps the next tween by 400ms, creating a natural cascade without mental arithmetic.

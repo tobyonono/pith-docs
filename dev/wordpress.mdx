@@ -1,0 +1,83 @@
+---
+title: "WordPress Development Standards at Pith"
+sidebarTitle: "WordPress"
+description: "Pith's approach to WordPress — theme architecture, the tools and plugins Pith uses, WooCommerce standards, and headless WordPress with Next.js."
+---
+
+## When to Use WordPress
+
+WordPress is the right choice for content-heavy sites where clients need a familiar, low-friction CMS experience — particularly when the editorial team has existing WordPress knowledge. It is also the default platform for ecommerce projects built with WooCommerce, where the plugin ecosystem and client familiarity outweigh the benefits of a more bespoke stack. For complex product builds, interactive applications, or projects where content modelling flexibility is a priority, prefer Sanity.
+
+## Theme Architecture
+
+Pith builds custom themes only. Off-the-shelf themes and heavily modified commercial themes introduce bloated code, security surface area, and upgrade friction that make long-term maintenance painful. Every Pith WordPress project starts from a clean, purpose-built theme.
+
+Standard theme structure:
+
+```
+theme-name/
+├── functions.php       # Theme setup, enqueues, hooks
+├── style.css           # Theme headers only
+├── index.php
+├── template-parts/     # Reusable template sections
+├── inc/               # PHP functions split by concern
+│   ├── post-types.php
+│   ├── acf-fields.php
+│   └── helpers.php
+├── src/               # JS & CSS source files
+└── dist/              # Compiled assets
+```
+
+Keep `functions.php` lean — use it only for requiring files in `inc/` and registering top-level hooks. All substantive logic lives in purpose-named files within `inc/`.
+
+## ACF (Advanced Custom Fields)
+
+Pith uses ACF Pro for flexible content fields and repeater patterns. Always define field groups in PHP using `acf_add_local_field_group()` rather than through the WordPress admin UI — this keeps field definitions in version control alongside the theme code that renders them:
+
+```php
+acf_add_local_field_group([ ... ])
+```
+
+Store ACF field definitions in `inc/acf-fields.php`. This ensures that field structure is consistent across all environments and is never accidentally overwritten by a database sync.
+
+## WooCommerce Standards
+
+- Override WooCommerce templates by copying them into a `woocommerce/` directory within the theme — never edit WooCommerce core files
+- Use WooCommerce action and filter hooks (`woocommerce_before_shop_loop`, `woocommerce_after_add_to_cart_button`, etc.) for layout modifications rather than template overrides where possible
+- If building on top of a parent theme, use a child theme so WooCommerce template overrides and customisations survive parent theme updates
+- Test all checkout flows and payment gateway integrations in staging before deploying to production
+
+## Headless WordPress
+
+For headless setups where Next.js acts as the frontend, use WPGraphQL to expose WordPress content via a GraphQL API. Install the WPGraphQL plugin and query it from the Next.js app using a GraphQL client:
+
+```ts
+const { data } = await client.query({
+  query: gql`
+    query GetPosts {
+      posts {
+        nodes { title slug excerpt }
+      }
+    }
+  `
+})
+```
+
+Use ISR (Incremental Static Regeneration) or on-demand revalidation via WPGraphQL webhooks to keep the Next.js cache in sync with WordPress content changes.
+
+## Plugin Policy
+
+Every plugin added to a WordPress project increases surface area for security vulnerabilities and performance degradation. Keep the plugin count as low as possible — only install a plugin when it provides clear, outsized value over a hand-rolled solution.
+
+Before installing any plugin, audit its update frequency, active installation count, and compatibility with the current WordPress version.
+
+**Pith-approved plugins:**
+
+| Plugin | Purpose |
+|---|---|
+| ACF Pro | Custom fields and flexible content |
+| Yoast SEO | SEO metadata and sitemaps |
+| WPGraphQL | Headless GraphQL API |
+| WooCommerce | Ecommerce |
+
+Plugins outside this list require team sign-off before installation on a client project.

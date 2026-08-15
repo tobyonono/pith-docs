@@ -1,0 +1,105 @@
+---
+title: "Sanity CMS Integration and Schema Conventions"
+sidebarTitle: "Sanity"
+description: "How Pith sets up Sanity, structures schemas, writes GROQ queries, and integrates Sanity with Next.js for on-demand revalidation."
+---
+
+## Why Sanity
+
+Sanity is Pith's preferred headless CMS for bespoke digital products. Unlike traditional CMS platforms, Sanity offers a fully flexible content model with no enforced structure — schemas are defined in code, versioned in Git, and tailored exactly to the project's needs. Its real-time API powers live previews and collaborative editing, while the customisable Sanity Studio gives clients a polished, ownable editorial interface they can manage independently long after a project ships.
+
+## Project Setup
+
+Scaffold a new Sanity project with:
+
+```bash
+npx create-sanity@latest --template clean
+```
+
+For most projects, keep the Sanity Studio in a `/sanity` directory within the Next.js monorepo — this simplifies environment management and co-locates schema changes with the frontend code that consumes them. For larger projects with dedicated content teams, a separate repo for the Studio is appropriate.
+
+## Schema Conventions
+
+Define schemas in TypeScript using Sanity's `defineType` and `defineField` helpers. Document type names and field names are always `camelCase`. Always use the `slug` type for URL-friendly identifiers, and attach a `source` option so slugs auto-populate from a title field.
+
+```ts
+// schemas/project.ts
+export const project = defineType({
+  name: 'project',
+  title: 'Project',
+  type: 'document',
+  fields: [
+    defineField({ name: 'title', type: 'string', validation: (r) => r.required() }),
+    defineField({ name: 'slug', type: 'slug', options: { source: 'title' } }),
+    defineField({ name: 'description', type: 'text' }),
+    defineField({ name: 'coverImage', type: 'image', options: { hotspot: true } }),
+    defineField({ name: 'publishedAt', type: 'datetime' }),
+  ],
+})
+```
+
+Register all schemas in `sanity.config.ts` via the `schema.types` array. Keep one schema per file and group related schemas in subdirectories (e.g. `schemas/documents/`, `schemas/objects/`).
+
+## GROQ Query Patterns
+
+Write queries in a dedicated `lib/sanity/queries.ts` file so they are reusable across the app. Use `groq` tagged template literals for syntax highlighting and IDE support. Always project only the fields you need — avoid returning full documents.
+
+```ts
+// lib/sanity/queries.ts
+export const projectsQuery = groq`
+  *[_type == "project" && defined(slug)] | order(publishedAt desc) {
+    _id,
+    title,
+    slug,
+    description,
+    "coverImageUrl": coverImage.asset->url,
+    publishedAt
+  }
+`
+```
+
+Use GROQ projections with inline aliases (e.g. `"coverImageUrl": coverImage.asset->url`) to flatten nested references into the shape the frontend expects, rather than transforming data in component code.
+
+## Next.js Integration
+
+Create a single shared client instance in `lib/sanity/client.ts`:
+
+```ts
+// lib/sanity/client.ts
+import { createClient } from 'next-sanity'
+
+export const client = createClient({
+  projectId: process.env.SANITY_PROJECT_ID!,
+  dataset: process.env.SANITY_DATASET ?? 'production',
+  apiVersion: '2024-01-01',
+  useCdn: process.env.NODE_ENV === 'production',
+})
+```
+
+<Note>Always specify `apiVersion` using a fixed date string. This pins your queries to a known API behaviour and prevents unexpected breaking changes when Sanity releases API updates.</Note>
+
+<Tip>When building live preview functionality in the Sanity Studio, set `useCdn: false` on the preview client so editors always see the latest unpublished content rather than a cached CDN response.</Tip>
+
+## On-Demand Revalidation
+
+Use Sanity webhooks to trigger Next.js on-demand revalidation when content changes. In the Sanity dashboard, create a webhook pointing to `/api/revalidate` on your Vercel deployment, and include a shared secret in the request header for verification.
+
+Tag data fetches with the Sanity document type name:
+
+```ts
+fetch(url, { next: { tags: ['project'] } })
+```
+
+In the revalidation route handler, call `revalidateTag('project')` to surgically invalidate only the affected content type, leaving other cached data untouched.
+
+## Image Handling
+
+Use `@sanity/image-url` to build optimised image URLs from Sanity image references, then pass those URLs to `next/image` for automatic format conversion and lazy loading:
+
+```ts
+import imageUrlBuilder from '@sanity/image-url'
+const builder = imageUrlBuilder(client)
+const urlFor = (source: SanityImageSource) => builder.image(source)
+```
+
+Enable `hotspot: true` on image fields so editors can set a focal point — this ensures smart cropping when images are displayed at different aspect ratios across breakpoints.

@@ -1,0 +1,87 @@
+---
+title: "Git Workflow and Branching Conventions"
+sidebarTitle: "Git Workflow"
+description: "Pith's Git branching strategy, commit message conventions, PR process, and the rules that keep every project's history clean and deployable."
+---
+
+## Branch Strategy
+
+Pith uses a simplified Git Flow across all projects. The goal is a history that is always in a releasable state, with a clear audit trail of what changed and why.
+
+| Branch | Purpose |
+|---|---|
+| `main` | Production. Always deployable. Protected — no direct pushes. |
+| `develop` | Integration branch. All feature branches merge here first. |
+| `feature/description` | New features or enhancements |
+| `fix/description` | Bug fixes |
+| `hotfix/description` | Urgent production fixes branched directly from `main` |
+| `chore/description` | Dependency updates, refactors, tooling changes |
+
+Branch names use `kebab-case` descriptions that are short but meaningful. Prefer `feature/hero-animation` over `feature/johns-work` or `feature/new`.
+
+Hotfix branches are the only exception to the "merge to `develop` first" rule — after merging a hotfix to `main`, immediately back-merge it to `develop` to keep the branches in sync.
+
+## Commit Message Convention
+
+Pith follows the [Conventional Commits](https://www.conventionalcommits.org/) specification. Every commit message uses a structured format that makes the project history scannable and supports automated changelog generation.
+
+```
+feat: add hero animation sequence
+fix: resolve mobile nav overflow on iOS
+chore: update GSAP to v3.12
+docs: update README with environment setup
+refactor: extract scroll hook into useScrollProgress
+perf: lazy-load below-fold images
+```
+
+**Format:** `type(scope): description`
+
+- Keep the description under 72 characters
+- Use the imperative mood — "add" not "added", "fix" not "fixed"
+- The optional `scope` in parentheses names the area of the codebase affected: `feat(nav):`, `fix(checkout):`
+- Add a body or footer for breaking changes: `BREAKING CHANGE: renames `useNav` to `useNavigation``
+
+## PR Process
+
+Every change — no matter how small — goes through a pull request. Direct pushes to `main` or `develop` are blocked by branch protection rules.
+
+**Opening a PR:**
+- Title follows the commit convention (e.g. `feat: add project filtration`)
+- Description includes a summary of what changed and why
+- Attach screenshots or screen recordings for any visual changes
+- Link to the relevant Notion task or Linear issue
+
+**Review and merge:**
+- Minimum one approval from a team member before merging
+- The author resolves all review comments before requesting re-review
+- Use **squash merge** for feature and fix branches to keep `develop`'s history clean
+- Delete the branch after merging
+
+## Pre-Commit Hooks
+
+Pith uses [Husky](https://typicode.github.io/husky/) and [lint-staged](https://github.com/lint-staged/lint-staged) to run linting and formatting automatically before each commit. This catches issues at the source rather than in CI.
+
+```json
+{
+  "lint-staged": {
+    "*.{ts,tsx}": ["eslint --fix", "prettier --write"],
+    "*.{css,json,md}": ["prettier --write"]
+  }
+}
+```
+
+Set up Husky during project initialisation — it should be committed to the repo so every team member and CI environment runs the same hooks. If a commit fails the pre-commit hook, fix the flagged issues before retrying.
+
+## `.gitignore` Essentials
+
+Every project `.gitignore` must include at minimum:
+
+```
+.env.local
+.env*.local
+node_modules/
+.next/
+dist/
+```
+
+Never commit environment variables, compiled output, or local overrides. Use `.env.example` (committed, no real values) to document the variables a project requires so new team members can get set up quickly.

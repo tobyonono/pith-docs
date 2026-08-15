@@ -1,13 +1,11 @@
 {
-  "$schema": "https://mintlify.com/docs.json",
-  "name": "Pith Studio",
+  "projectType": "general",
+  "projectName": "Pith Studio Knowledge Base",
+  "projectDescription": "Internal knowledge base for Pith — a creative technology studio — covering design philosophy, development standards, naming conventions, file organisation, and best practices.",
   "theme": "willow",
-  "colors": {
-    "primary": "#848484",
-    "light": "#161616",
-    "dark": "#c6c6c6"
-  },
-  "favicon": "https://media.brand.dev/5f59c12c-a3a7-4df2-9630-bb602fa2f8c8.png",
+  "primaryColor": "#848484",
+  "lightColor": "#161616",
+  "darkColor": "#c6c6c6",
   "navigation": {
     "tabs": [
       {
@@ -103,11 +101,17 @@
       }
     ]
   },
-  "navbar": {
-    "primary": {
-      "type": "button",
-      "href": "https://pith.works/en",
-      "label": "pith.works"
-    }
-  }
+  "keyFeatures": [
+    "Design naming conventions for files, layers, and components",
+    "Code naming conventions for variables, functions, and files",
+    "Figma workflow and file organisation standards",
+    "Design system guidelines: color, typography, spacing",
+    "Frontend development standards (Next.js, React, GSAP)",
+    "CMS workflows for Sanity and WordPress",
+    "Git branching and commit conventions",
+    "Performance and accessibility best practices",
+    "Client handoff and design-to-dev workflow",
+    "Studio philosophy and project process"
+  ],
+  "publicApiSurface": []
 }

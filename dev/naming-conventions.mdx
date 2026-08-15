@@ -1,0 +1,133 @@
+---
+title: "Code Naming Conventions for Pith Projects"
+sidebarTitle: "Naming Conventions"
+description: "How Pith names variables, functions, files, components, and CSS classes — conventions that keep codebases readable across every project."
+---
+
+Good naming is one of the most effective forms of documentation. A well-named variable, function, or file communicates intent without requiring a comment. These conventions apply across every Pith project so that any team member can pick up any codebase and feel immediately at home.
+
+## General Principles
+
+**Be descriptive over brief.** A name should explain *purpose*, not *implementation*. `getUserProfile` is better than `getData`. `isMenuOpen` is better than `open`.
+
+**Avoid abbreviations** unless they are universally understood in a web development context. Accepted short forms include `url`, `id`, `api`, `props`, `ref`, and `ctx`. Everything else should be written out in full.
+
+**Name booleans as questions.** A boolean should read like a yes/no question: `isLoading`, `hasError`, `canSubmit`, `shouldAnimate`. This makes conditionals read as natural language: `if (isLoading)` is immediately clear; `if (loading)` is ambiguous.
+
+---
+
+## JavaScript / TypeScript
+
+```ts
+// Variables & constants — camelCase
+const heroImageUrl = '...'
+const isMenuOpen = false
+
+// Constants (truly constant, top-level) — SCREAMING_SNAKE_CASE
+const MAX_RETRIES = 3
+const API_BASE_URL = 'https://...'
+
+// Functions — camelCase, verb-led
+function fetchPageData() {}
+function handleMenuToggle() {}
+function formatDate() {}
+
+// React components — PascalCase
+function HeroSection() {}
+function NavigationBar() {}
+
+// Types & interfaces — PascalCase
+type ButtonVariant = 'primary' | 'secondary'
+interface PageProps { title: string }
+
+// Booleans — prefix with is/has/can/should
+const isLoading = true
+const hasError = false
+const canSubmit = true
+```
+
+Functions should be **verb-led**: `fetch`, `handle`, `format`, `get`, `set`, `build`, `create`, `update`, `delete`. Event handlers specifically should use the `handle` prefix followed by the element and event: `handleButtonClick`, `handleFormSubmit`, `handleMenuToggle`.
+
+<Warning>
+  Avoid single-letter variable names outside of short-lived loop indices (`i`, `j`) or well-established mathematical contexts. Names like `e`, `d`, `x`, or `t` used as general variables make code significantly harder to scan and debug. Even loop variables benefit from descriptive names: `projectIndex` over `i`.
+</Warning>
+
+<Tip>
+  Use TypeScript to enforce naming at the type level. Defining a union type like `type ButtonVariant = 'primary' | 'secondary' | 'ghost'` means the correct string values are documented, autocompleted, and validated at compile time — no need for a comment or a wiki entry.
+</Tip>
+
+---
+
+## File & Folder Naming
+
+| Content | Convention | Example |
+|---|---|---|
+| React components | `PascalCase.tsx` | `HeroSection.tsx` |
+| Utility functions | `camelCase.ts` | `formatDate.ts` |
+| Next.js App Router pages | `kebab-case/` folders | `about-us/page.tsx` |
+| CSS Modules | Match component name | `HeroSection.module.css` |
+| Shared constants | `constants.ts` or domain-named | `animations.ts` |
+| Custom hooks | `camelCase.ts`, `use`-prefixed name | `useScrollPosition.ts` |
+
+Component files and the component they export should always share the same name. `HeroSection.tsx` exports `HeroSection`. This makes search and navigation predictable in any editor.
+
+---
+
+## CSS / Tailwind Class Order
+
+When writing Tailwind utility classes, follow this order to keep class strings scannable:
+
+1. **Layout** — `flex`, `grid`, `block`, `relative`, `absolute`
+2. **Box model** — `w-`, `h-`, `p-`, `m-`, `gap-`
+3. **Typography** — `text-`, `font-`, `leading-`, `tracking-`
+4. **Visual** — `bg-`, `border-`, `rounded-`, `shadow-`, `opacity-`
+5. **Interactive** — `hover:`, `focus:`, `transition-`, `cursor-`
+
+Use **Prettier with the official Tailwind CSS plugin** to automate this ordering. Manual sorting is not required — and not enforced by review — as long as the plugin is configured and running.
+
+---
+
+## API Routes / Endpoints
+
+Use **kebab-case plural nouns** for resource endpoints. Never use verbs in the path — the HTTP method carries the intent.
+
+```
+/api/projects          — list all projects
+/api/projects/[id]     — single project by ID
+/api/blog-posts        — kebab-case for multi-word resources
+/api/team-members/[id] — single team member
+```
+
+---
+
+## Environment Variables
+
+All environment variables use `SCREAMING_SNAKE_CASE`. Variables that need to be accessible in the browser must be prefixed with `NEXT_PUBLIC_`.
+
+```bash
+# Client-accessible (bundled into the browser build)
+NEXT_PUBLIC_SITE_URL=https://example.com
+NEXT_PUBLIC_SANITY_PROJECT_ID=abc123
+
+# Server-only (never sent to the client)
+SANITY_API_TOKEN=...
+SANITY_WEBHOOK_SECRET=...
+```
+
+Never commit secrets to version control. All variables live in `.env.local` (git-ignored) and are documented in a `.env.example` file that *is* committed.
+
+---
+
+## Git Branches
+
+Use `kebab-case` with a **type prefix** that describes the nature of the change:
+
+```
+feature/hero-animation
+fix/mobile-nav-overflow
+chore/update-dependencies
+hotfix/broken-contact-form
+refactor/sanity-query-layer
+```
+
+Branch names should be concise but descriptive enough that a reviewer understands the scope from the branch name alone before opening a PR.

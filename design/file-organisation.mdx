@@ -1,0 +1,105 @@
+---
+title: "Figma File Organisation and Project Structure"
+sidebarTitle: "File Organisation"
+description: "How Pith structures Figma projects, organises files across teams, and keeps design assets easy to find across every engagement."
+---
+
+A well-organised Figma workspace makes it easy for any Pith team member — or a client — to orient themselves in seconds. These conventions govern how we structure teams, projects, and files from day one of an engagement.
+
+---
+
+## Figma Team Structure
+
+Pith maintains **one Figma team per client**. Within each team, files are organised into named projects:
+
+| Project | Contents |
+|---------|----------|
+| `[Client] — Brand` | Logo files, brand guidelines, colour and type exploration |
+| `[Client] — Web` | Website design files, page layouts, responsive views |
+| `[Client] — Components` | Shared component library for the client's design system |
+
+Additional projects (`[Client] — App`, `[Client] — Email`, etc.) are created as the scope of work grows. Keep project names short and unambiguous — they're used in file names and version labels too.
+
+---
+
+## File Naming Convention
+
+Every Figma file is named using this format:
+
+```
+[YYYY-MM] Client — Project Description
+```
+
+**Examples:**
+
+```
+2024-11 Acme — Homepage Redesign
+2025-01 Birch & Co — Brand Refresh
+2025-03 Volta — Onboarding Flow
+```
+
+The date prefix keeps files sorted chronologically in the project view. The client name and description make it possible to identify a file at a glance — even from outside the team context (e.g., in a shared link or a Slack preview).
+
+---
+
+## Inside a Figma File — Page Order
+
+Every Pith Figma file follows the same internal page structure:
+
+<Steps>
+  <Step title="Cover">
+    The file thumbnail. Include the project name, client, date, and the lead designer's name. Use the Pith cover template from the shared library. **Keep this page updated** — it's the first thing a client or stakeholder sees when they open a link.
+  </Step>
+  <Step title="Design">
+    The live working design. All active design work happens here. Organise frames by page or flow, arranged left to right in chronological/logical order.
+  </Step>
+  <Step title="Components">
+    Isolated component explorations — new patterns being designed before they graduate to the shared library, or client-specific component work that isn't ready for wider use.
+  </Step>
+  <Step title="Prototypes">
+    Linked prototype flows. Each major flow gets its own area of this page. Label prototype frames clearly so stakeholders can navigate without guidance.
+  </Step>
+  <Step title="Archive">
+    Older iterations, rejected directions, and reference material. Move content here rather than deleting it — it's invaluable when a client wants to revisit an earlier direction. Never reference Archive content in active prototype flows.
+  </Step>
+</Steps>
+
+<Note>
+Keep the Cover page updated throughout the project lifecycle. An outdated cover — showing an old version name or missing the current phase — signals to clients that the file isn't being actively maintained, even when it is.
+</Note>
+
+---
+
+## Asset Management
+
+- **Always use frames, not groups, for major sections.** Frames participate in layout, export, and component logic in ways that groups do not.
+- **Local images** (photography, illustrations) should be placed inside named frames, not dropped loose onto the canvas.
+- **Icons** should be sourced from the shared Pith icon library or a project-specific icon set defined in the `[Client] — Components` project. Don't paste icon SVGs inline — define them as components.
+- **Never duplicate components from the shared library** into a project file. Instead, enable the shared library and use instances. If a component needs modification, extend it or raise a library update.
+
+---
+
+## Version Control
+
+Use Figma's built-in **Version History** (`File → Save to Version History`) at every meaningful milestone. Name versions clearly:
+
+```
+v1.0 — Initial Concept
+v1.1 — Client Feedback Round 1
+v1.2 — Revised Navigation
+v2.0 — Design Direction Sign-off
+```
+
+Do **not** use duplicated files as a versioning strategy (e.g., `Homepage Redesign FINAL`, `Homepage Redesign FINAL v2`). Duplicated files fragment feedback, break prototype links, and make it unclear which file is current.
+
+---
+
+## Shared Libraries
+
+Pith maintains a shared Figma component library available to all team members. When working on a project:
+
+- **Enable the Pith shared library** at the start of every new file.
+- **Use library instances** rather than recreating components locally.
+- If a component needs a client-specific variation, create it in the `[Client] — Components` project and document the divergence.
+- **When to detach:** Only detach a library component when a one-off customisation is needed and reuse is explicitly not required. Add a comment explaining why the instance was detached.
+- **When to extend:** If a variant or pattern is likely to recur, propose adding it to the shared library rather than detaching locally.

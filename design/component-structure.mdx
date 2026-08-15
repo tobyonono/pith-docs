@@ -1,0 +1,144 @@
+---
+title: "Component Structure and Design System Architecture"
+sidebarTitle: "Component Structure"
+description: "How Pith builds components in Figma — from atoms to organisms — and structures design systems that map cleanly to code."
+---
+
+Pith's component architecture is designed to serve two audiences simultaneously: designers working in Figma and developers building in React and Next.js. Every structural decision we make in Figma should reduce ambiguity in code — and vice versa.
+
+---
+
+## Atomic Design Approach
+
+Pith uses atomic design as a **loose mental model**, not a rigid taxonomy. The goal is clarity and consistency, not perfect categorical purity.
+
+<CardGroup cols={2}>
+  <Card title="Atoms" icon="atom">
+    The smallest, indivisible UI elements. These have no dependencies on other components.
+
+    **Examples:** Button, Input, Icon, Badge, Avatar, Checkbox, Tag
+  </Card>
+  <Card title="Molecules" icon="flask">
+    Combinations of atoms that form a discrete, reusable UI unit.
+
+    **Examples:** Form Field (label + input + error), Search Bar, Card, Pagination, Toast
+  </Card>
+  <Card title="Organisms" icon="cubes">
+    Complex UI sections composed of molecules and atoms, often representing a full functional area.
+
+    **Examples:** Navigation, Hero Section, Feature Grid, Pricing Table, Footer
+  </Card>
+  <Card title="Templates" icon="table-layout">
+    Page-level layout scaffolds that position organisms and define the overall structure. These typically map directly to a page type in the codebase.
+
+    **Examples:** Landing Page, Article Page, Dashboard, Checkout Flow
+  </Card>
+</CardGroup>
+
+In practice, the line between a molecule and an organism is a judgement call. When in doubt, ask: *does this component stand alone, or does it only make sense inside something larger?*
+
+---
+
+## Component Anatomy in Figma
+
+### Auto-Layout
+
+**Every component must use auto-layout.** No exceptions. Auto-layout frames resize predictably, produce accurate spacing values in Dev Mode, and force us to think about how a component responds to content changes.
+
+### Variants
+
+Use Figma's **Variants** feature to group all states and variations of a component into a single component set. Avoid creating separate, disconnected components for different states of the same element.
+
+### Component Properties
+
+Define **component properties** for every configurable aspect of a component. Property names must match the props used in the React component:
+
+| Figma Property | Type | Example Values |
+|----------------|------|----------------|
+| `variant` | Variant | `primary`, `secondary`, `ghost` |
+| `size` | Variant | `sm`, `md`, `lg` |
+| `disabled` | Boolean | `true`, `false` |
+| `iconLeft` | Instance swap | Icon/arrow-right |
+| `label` | Text | `Button Label` |
+
+### Interactive States
+
+Every interactive component must include all of the following states before it is marked ready:
+
+- **Default** — resting state
+- **Hover** — cursor over the element
+- **Focus** — keyboard focus ring visible
+- **Disabled** — non-interactive state
+- **Error** — where applicable (inputs, form fields)
+- **Loading** — where applicable (buttons, data-fetching states)
+
+---
+
+## Variant Organisation
+
+Within a component set, organise variant properties so the most important dimension comes first. Use consistent ordering across all components:
+
+```
+size → sm | md | lg
+variant → primary | secondary | ghost | destructive
+state → default | hover | focus | disabled | error
+```
+
+This mirrors the way developers typically call out props in JSX and makes it faster to find the right combination in Figma's variant panel.
+
+---
+
+## Responsive Components
+
+- Build **mobile-first**: design the smallest breakpoint variant first, then extend to wider viewports.
+- Use **min/max width constraints** in component frames to reflect realistic content boundaries.
+- For components that change significantly at different breakpoints, create separate mobile and desktop variants within the same component set using a `breakpoint` property (`mobile`, `tablet`, `desktop`).
+- Avoid hardcoding widths inside components. Let parent frames and page layouts dictate width where possible.
+
+---
+
+## Documentation Inside Figma
+
+Every component page should include:
+
+- **Spacing annotations** referencing token names (`spacing/4`, `spacing/8`), not raw pixel values
+- **Colour references** using variable/style names (`brand/primary`, `semantic/error`), not hex codes
+- **Interaction notes** — a sticky note or annotation frame describing hover behaviour, transition duration, and trigger conditions
+- **Usage guidance** — a brief note on when to use this component and when not to
+
+For complex components or flows, add a dedicated `Specs` page to the Figma file with annotated redlines.
+
+---
+
+## Handoff-Ready Checklist
+
+Before marking a component as ready for development, verify every item below:
+
+**Structure & Naming**
+- [ ] Component uses auto-layout throughout
+- [ ] All layers are meaningfully named (no `Frame 47`, `Group 3`)
+- [ ] Component follows the `ComponentName/Variant/State` naming convention
+- [ ] Component properties are defined and match code prop names
+
+**States & Variants**
+- [ ] Default state is present
+- [ ] Hover state is present
+- [ ] Focus state is present (with visible focus ring)
+- [ ] Disabled state is present
+- [ ] Error state is present (where applicable)
+- [ ] Loading state is present (where applicable)
+
+**Tokens & Styles**
+- [ ] All colours reference variables or styles (no raw hex values)
+- [ ] All text uses a named text style
+- [ ] All spacing references spacing tokens
+
+**Documentation**
+- [ ] Spacing and sizing are annotated
+- [ ] Interaction behaviour is described in a note
+- [ ] Any edge cases or usage constraints are documented
+
+**Prototype & Handoff**
+- [ ] Interactive prototype connections added where behaviour needs demonstrating
+- [ ] Component is published to the relevant library (or staged for library review)
+- [ ] Dev Mode inspect values are clean and accurate
